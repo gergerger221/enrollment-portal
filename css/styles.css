@@ -1,0 +1,551 @@
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Tab Navigation Styles */
+.tab-btn {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.tab-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.tab-btn.active {
+    background-color: #007dfe;
+    color: white;
+    border-color: #007dfe;
+}
+
+.tab-content {
+    display: none;
+    padding-top: 130px;
+}
+
+.tab-content.active {
+    display: block;
+}
+.dark-mode body {
+    background-color: #1a1a2e !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-white {
+    background-color: #16213e !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-gray-50 {
+    background-color: #1a1a2e !important;
+    color: #ffffff !important;
+}
+.dark-mode .text-gray-900,
+.dark-mode .text-gray-800 {
+    color: #ffffff !important;
+}
+.dark-mode .text-gray-700 {
+    color: #e0e0e0 !important;
+}
+.dark-mode .text-gray-600 {
+    color: #b0b0b0 !important;
+}
+.dark-mode .text-gray-500 {
+    color: #909090 !important;
+}
+.dark-mode .border-gray-200 {
+    border-color: #2a2a4a !important;
+}
+.dark-mode .border-gray-300 {
+    border-color: #3a3a5a !important;
+}
+.dark-mode .border-gray-600 {
+    border-color: #4a4a6a !important;
+}
+.dark-mode .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+}
+.dark-mode .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+.dark-mode .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+}
+.dark-mode .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+.dark-mode .bg-gray-100 {
+    background-color: #2a2a4a !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-gray-200 {
+    background-color: #3a3a5a !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-blue-50 {
+    background-color: #1b2e50 !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-yellow-50 {
+    background-color: #352b12 !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-green-50 {
+    background-color: #16382a !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-red-50 {
+    background-color: #3d1c20 !important;
+    color: #ffffff !important;
+}
+.dark-mode .bg-indigo-50,
+.dark-mode .bg-indigo-50\/40 {
+    background-color: #212140 !important;
+    color: #ffffff !important;
+}
+.dark-mode .text-blue-700,
+.dark-mode .text-blue-600 {
+    color: #60a5fa !important;
+}
+.dark-mode .text-green-700,
+.dark-mode .text-green-600 {
+    color: #4ade80 !important;
+}
+.dark-mode .text-red-700,
+.dark-mode .text-red-600 {
+    color: #f87171 !important;
+}
+.dark-mode .text-yellow-700,
+.dark-mode .text-yellow-600 {
+    color: #facc15 !important;
+}
+.dark-mode .text-indigo-700,
+.dark-mode .text-indigo-600 {
+    color: #a5b4fc !important;
+}
+.dark-mode .border-blue-100,
+.dark-mode .border-blue-200 {
+    border-color: #1e3a8a !important;
+}
+.dark-mode .border-green-100,
+.dark-mode .border-green-200 {
+    border-color: #064e3b !important;
+}
+.dark-mode .border-red-100,
+.dark-mode .border-red-200 {
+    border-color: #7f1d1d !important;
+}
+.dark-mode .border-yellow-100,
+.dark-mode .border-yellow-200 {
+    border-color: #713f12 !important;
+}
+.dark-mode .border-indigo-100,
+.dark-mode .border-indigo-200 {
+    border-color: #312e81 !important;
+}
+.dark-mode input {
+    background-color: #2a2a4a !important;
+    color: #ffffff !important;
+    border-color: #3a3a5a !important;
+}
+.dark-mode input::placeholder {
+    color: #909090 !important;
+}
+.dark-mode select {
+    background-color: #2a2a4a !important;
+    color: #ffffff !important;
+}
+.dark-mode textarea {
+    background-color: #2a2a4a !important;
+    color: #ffffff !important;
+    border-color: #3a3a5a !important;
+}
+.dark-mode footer {
+    background-color: #0f0f1a !important;
+}
+.dark-mode .text-white {
+    color: #ffffff !important;
+}
+.dark-mode .hover\:bg-gray-100:hover {
+    background-color: #2a2a4a !important;
+}
+.dark-mode .hover\:bg-gray-300:hover {
+    background-color: #3a3a5a !important;
+}
+.dark-mode .bg-gray-900 {
+    background-color: #0f0f1a !important;
+}
+.dark-mode .bg-blue-600 {
+    background-color: #1e3a5f !important;
+}
+.dark-mode .bg-blue-700 {
+    background-color: #16213e !important;
+}
+.dark-mode .bg-indigo-600 {
+    background-color: #1e3a5f !important;
+}
+.dark-mode .bg-green-500 {
+    background-color: #1a4a3a !important;
+}
+.dark-mode .bg-red-500 {
+    background-color: #4a1a1a !important;
+}
+.dark-mode .bg-purple-500 {
+    background-color: #3a1a4a !important;
+}
+
+/* Form Validation Styles - Only for JavaScript-added classes */
+.border-red-500 {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+.dark-mode .border-red-500 {
+    border-color: #ef4444 !important;
+    background-color: #3a1a1a !important;
+}
+
+/* Sidebar Nav Styles */
+#sidebarNav {
+    width: 80px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#sidebarNav.expanded {
+    width: 256px;
+}
+
+main {
+    padding-left: 80px;
+    transition: padding-left 0.3s ease;
+}
+
+main.sidebar-expanded {
+    padding-left: 256px;
+}
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-animate-in {
+    animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Sidebar Collapse for Desktop */
+@media (min-width: 768px) {
+    .sidebar-collapsed #adminSidebar {
+        width: 5.5rem !important;
+    }
+    
+    .sidebar-collapsed #adminSidebar .admin-tab span,
+    .sidebar-collapsed #adminSidebar .admin-tab #pendingBadge,
+    .sidebar-collapsed #adminSidebar h1,
+    .sidebar-collapsed #adminSidebar span.text-\[10px\],
+    .sidebar-collapsed #adminSidebar h4,
+    .sidebar-collapsed #adminSidebar span.text-xs,
+    .sidebar-collapsed #adminSidebar .p-4 button span {
+        display: none !important;
+    }
+
+    .sidebar-collapsed #adminSidebar .admin-tab,
+    .sidebar-collapsed #adminSidebar button[onclick="showChangePasswordModal()"],
+    .sidebar-collapsed #adminSidebar button[onclick="logoutAdmin()"] {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .sidebar-collapsed #adminSidebar .admin-tab i,
+    .sidebar-collapsed #adminSidebar button[onclick="showChangePasswordModal()"] i,
+    .sidebar-collapsed #adminSidebar button[onclick="logoutAdmin()"] i {
+        margin: 0 !important;
+        font-size: 1.25rem !important;
+    }
+
+    .sidebar-collapsed #adminSidebar .px-6 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        justify-content: center !important;
+    }
+    
+    .sidebar-collapsed #adminSidebar .p-5 {
+        padding: 1.25rem 0 !important;
+        justify-content: center !important;
+    }
+}
+
+/* Sidebar Text Visibility Transition */
+.sidebar-text {
+    opacity: 0;
+    width: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, width 0.3s ease, visibility 0.2s ease;
+    margin-left: 0;
+}
+
+#sidebarNav.expanded .sidebar-text {
+    opacity: 1;
+    width: auto;
+    visibility: visible;
+    margin-left: 12px;
+}
+
+/* Sidebar Button Specific Styles */
+#sidebarNav .tab-btn {
+    border: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    color: #4b5563;
+    justify-content: flex-start;
+    display: flex;
+    align-items: center;
+}
+
+#sidebarNav .tab-btn:hover {
+    background-color: #f3f4f6 !important;
+    color: #1f2937;
+}
+
+#sidebarNav .tab-btn.active {
+    background-color: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-left: 4px solid #0284c7 !important;
+}
+
+/* Dark Mode Sidebar Styles */
+.dark-mode #sidebarNav {
+    background-color: #1e1e38 !important;
+    border-right-color: #2e2e4a !important;
+}
+
+.dark-mode #sidebarNav .tab-btn {
+    color: #9ca3af !important;
+}
+
+.dark-mode #sidebarNav .tab-btn:hover {
+    background-color: #2a2a4a !important;
+    color: #ffffff !important;
+}
+
+.dark-mode #sidebarNav .tab-btn.active {
+    background-color: #1e3a5f !important;
+    color: #38bdf8 !important;
+    border-left-color: #38bdf8 !important;
+}
+
+/* Tab Content Spacing Adjustments */
+.tab-content {
+    padding-top: 90px !important;
+}
+
+#home-tab {
+    padding-top: 64px !important;
+}
+
+/* Dark Mode Slate Color Overrides for Admin Dashboard */
+.dark-mode .bg-slate-50,
+.dark-mode .bg-slate-100 {
+    background-color: #1a1a2e !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .bg-slate-200 {
+    background-color: #2a2a4a !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .bg-slate-800 {
+    background-color: #2a2a4a !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .bg-slate-900 {
+    background-color: #0f0f1a !important;
+}
+
+.dark-mode .text-slate-900,
+.dark-mode .text-slate-800 {
+    color: #ffffff !important;
+}
+
+.dark-mode .text-slate-700 {
+    color: #e0e0e0 !important;
+}
+
+.dark-mode .text-slate-600 {
+    color: #b0b0b0 !important;
+}
+
+.dark-mode .text-slate-500 {
+    color: #909090 !important;
+}
+
+.dark-mode .text-slate-400 {
+    color: #a0a0a0 !important;
+}
+
+.dark-mode .text-slate-300 {
+    color: #d1d5db !important;
+}
+
+.dark-mode .border-slate-100,
+.dark-mode .border-slate-200,
+.dark-mode .border-slate-300 {
+    border-color: #2a2a4a !important;
+}
+
+.dark-mode .border-slate-800 {
+    border-color: #2e2e4a !important;
+}
+
+/* Stepper Component Dark Mode Adjustments */
+.dark-mode .step-circle.border-white {
+    border-color: #1a1a2e !important;
+}
+.dark-mode .step-circle.border-indigo-100 {
+    border-color: #312e81 !important;
+}
+.dark-mode .step-circle.border-green-100 {
+    border-color: #064e3b !important;
+}
+.dark-mode .step-line.bg-gray-200 {
+    background-color: #3a3a5a !important;
+}
+
+/* Step 6 Summary of Enrollment - Dark Mode */
+.dark-mode #enrollmentSummaryCard {
+    background-image: linear-gradient(135deg, #1e1e3a, #1a2540) !important;
+    background-color: #1e1e3a !important;
+    border-color: #312e81 !important;
+}
+.dark-mode #enrollmentSummaryCard .bg-white {
+    background-color: #16213e !important;
+}
+.dark-mode #enrollmentSummaryCard h3 {
+    color: #f0f0f5 !important;
+}
+.dark-mode #enrollmentSummaryCard h4 {
+    color: #a5b4fc !important;
+    border-bottom-color: #2e2e5a !important;
+}
+/* Labels (uppercase small text) */
+.dark-mode #enrollmentSummaryCard .text-gray-400,
+.dark-mode #enrollmentSummaryCard .tracking-widest,
+.dark-mode #enrollmentSummaryCard .tracking-wider {
+    color: #9ca3c8 !important;
+}
+/* Value text */
+.dark-mode #enrollmentSummaryCard .text-gray-800,
+.dark-mode #enrollmentSummaryCard .text-gray-700 {
+    color: #e8e8f0 !important;
+}
+/* Document status cards */
+.dark-mode #enrollmentSummaryCard .rounded-xl {
+    background-color: #1a1a38 !important;
+    border-color: #312e81 !important;
+}
+.dark-mode #enrollmentSummaryCard .bg-green-100 {
+    background-color: #133a2a !important;
+}
+.dark-mode #enrollmentSummaryCard .text-green-600 {
+    color: #4ade80 !important;
+}
+.dark-mode #enrollmentSummaryCard .bg-amber-100 {
+    background-color: #3a2e14 !important;
+}
+.dark-mode #enrollmentSummaryCard .text-amber-600 {
+    color: #fbbf24 !important;
+}
+/* Info banner at bottom of card */
+.dark-mode #enrollmentSummaryCard .text-gray-500 {
+    color: #c0c0d8 !important;
+}
+.dark-mode #enrollmentSummaryCard .mt-6 {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+    border-color: #312e81 !important;
+}
+/* Sub-cards border */
+.dark-mode #enrollmentSummaryCard .border-indigo-50 {
+    border-color: #2e2e5a !important;
+}
+.dark-mode #enrollmentSummaryCard .border-indigo-100 {
+    border-color: #312e81 !important;
+}
+/* Data Privacy & buttons section below summary */
+.dark-mode .form-step[data-step="6"] .text-gray-700 {
+    color: #d0d0e0 !important;
+}
+.dark-mode .form-step[data-step="6"] .border-b {
+    border-bottom-color: #2e2e5a !important;
+}
+
+/* Manage Sections Tab Dark Mode */
+.admin-dark #sectionsTab h3,
+.admin-dark #sectionsTab h4,
+.admin-dark #sectionsTab h5 {
+    color: #f1f5f9;
+}
+.admin-dark #sectionsTab p {
+    color: #94a3b8;
+}
+.admin-dark #sectionLevelSelect,
+.admin-dark #sectionGradeSelect,
+.admin-dark #sectionStrandSelect,
+.admin-dark #assignTargetSection {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+.admin-dark #sectionsGrid > div,
+.admin-dark #sectionsTab .bg-white.rounded-xl {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+.admin-dark #sectionsGrid .bg-slate-50,
+.admin-dark #sectionsTab .bg-slate-50 {
+    background-color: #0f172a;
+    border-color: #334155;
+}
+.admin-dark #sectionsGrid .hover\:bg-slate-50:hover {
+    background-color: #334155;
+}
+.admin-dark #sectionsTab .bg-blue-50 {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+.admin-dark #sectionsTab .text-slate-800,
+.admin-dark #sectionsTab .text-slate-700 {
+    color: #f1f5f9;
+}
+.admin-dark #sectionsTab .border-slate-200,
+.admin-dark #sectionsTab .border-slate-100 {
+    border-color: #334155;
+}
+.admin-dark #sectionsGrid .text-slate-300 {
+    color: #64748b;
+}
+
+/* Section Modal Dark Mode */
+.admin-dark #sectionModalContent {
+    background-color: #1e293b;
+}
+.admin-dark #sectionModalContent h2 {
+    color: #f1f5f9;
+}
+.admin-dark #sectionModalContent label {
+    color: #cbd5e1;
+}
+.admin-dark #sectionName,
+.admin-dark #sectionMaxStudents,
+.admin-dark #sectionName:focus,
+.admin-dark #sectionMaxStudents:focus {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}

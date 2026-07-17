@@ -1,0 +1,1069 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — JJKings Academy of Biringan</title>
+  <meta name="description" content="Admin portal for managing student enrollments, curriculum, and fees at JJKings Academy of Biringan." />
+  <script src="javascript/tailwind.js"></script>
+  <link rel="stylesheet" href="css/all.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ═══════════════ ADMIN DARK MODE ═══════════════ */
+    html.admin-dark body {
+        background-color: #0d1117;
+        color: #e6edf3;
+    }
+    /* Topbar */
+    html.admin-dark header.sticky {
+        background-color: #161b22 !important;
+        border-color: #30363d !important;
+    }
+    html.admin-dark #topbarPageTitle { color: #e6edf3 !important; }
+    /* All white surface cards, modals, drawer */
+    html.admin-dark .bg-white {
+        background-color: #161b22 !important;
+    }
+    /* Page / main background */
+    html.admin-dark main,
+    html.admin-dark .bg-slate-100 {
+        background-color: #0d1117 !important;
+    }
+    /* Secondary surface (table headers, action footer) */
+    html.admin-dark .bg-slate-50,
+    html.admin-dark thead.bg-slate-50 {
+        background-color: #1c2128 !important;
+    }
+    /* Borders */
+    html.admin-dark .border-slate-200,
+    html.admin-dark .border-slate-100 {
+        border-color: #30363d !important;
+    }
+    /* Skeleton loader blocks */
+    html.admin-dark .bg-slate-200 { background-color: #21262d !important; }
+    /* Text */
+    html.admin-dark .text-slate-800,
+    html.admin-dark .text-slate-700 { color: #e6edf3 !important; }
+    html.admin-dark .text-slate-600 { color: #8b949e !important; }
+    html.admin-dark .text-slate-500,
+    html.admin-dark .text-slate-400 { color: #6e7681 !important; }
+    /* Form controls */
+    html.admin-dark input[type="text"],
+    html.admin-dark input[type="email"],
+    html.admin-dark input[type="password"],
+    html.admin-dark textarea,
+    html.admin-dark select {
+        background-color: #0d1117 !important;
+        border-color: #30363d !important;
+        color: #e6edf3 !important;
+    }
+    html.admin-dark input::placeholder,
+    html.admin-dark textarea::placeholder { color: #484f58 !important; }
+    /* Table row hover */
+    html.admin-dark tbody tr:hover { background-color: #1c2128 !important; }
+    /* Table dividers */
+    html.admin-dark tbody tr { border-color: #21262d !important; }
+    /* Stat icon backgrounds */
+    html.admin-dark .bg-indigo-50 { background-color: rgba(79,70,229,0.12) !important; }
+    html.admin-dark .bg-green-50  { background-color: rgba(22,163,74,0.12) !important; }
+    html.admin-dark .bg-yellow-50 { background-color: rgba(202,138,4,0.12) !important; }
+    html.admin-dark .bg-red-50    { background-color: rgba(220,38,38,0.12) !important; }
+    html.admin-dark .bg-blue-50   { background-color: rgba(37,99,235,0.12) !important; }
+    /* Filter pills inactive backgrounds */
+    html.admin-dark .enroll-filter:not([class*="bg-slate-800"]) { color: #8b949e !important; }
+    html.admin-dark .student-filter:not([class*="bg-slate-800"]) { color: #8b949e !important; }
+    /* DB synced badge */
+    html.admin-dark .bg-green-50.text-green-700 {
+        background-color: rgba(22,163,74,0.1) !important;
+        border-color: rgba(22,163,74,0.3) !important;
+        color: #4ade80 !important;
+    }
+    /* Dark mode toggle button */
+    html.admin-dark #darkModeBtn {
+        background-color: #21262d;
+        color: #f0c040;
+        border-color: #30363d;
+    }
+    html.admin-dark #darkModeBtn:hover {
+        background-color: #2d333b;
+    }
+    /* Curriculum code badges */
+    html.admin-dark .bg-blue-50.text-blue-600 {
+        background-color: rgba(37,99,235,0.15) !important;
+        color: #60a5fa !important;
+        border-color: rgba(37,99,235,0.25) !important;
+    }
+    /* Status badge colours stay — they're already coloured enough */
+    /* Profile drawer sticky header */
+    html.admin-dark #profileDrawer > div:first-child {
+        background-color: #161b22 !important;
+        border-color: #30363d !important;
+    }
+    /* Welcome banner — gradient stays, looks great in dark */
+    /* Sidebar — already dark, no changes needed */
+    /* Chart cards dark mode */
+    html.admin-dark .chart-card {
+        background-color: #161b22 !important;
+        border-color: #30363d !important;
+    }
+    html.admin-dark .chart-card-title { color: #e6edf3 !important; }
+    html.admin-dark .chart-card-sub   { color: #6e7681 !important; }
+
+    /* Layout Gap & Sidebar Fixes */
+    main {
+        padding-left: 0 !important;
+    }
+    html.swal2-height-auto, body.swal2-height-auto {
+        height: 100vh !important;
+    }
+
+    /* Light Mode Contrast Improvements */
+    .text-slate-400 { color: #64748b !important; }
+    .text-slate-500 { color: #475569 !important; }
+    .text-slate-600 { color: #334155 !important; }
+    .text-gray-400 { color: #6b7280 !important; }
+    .text-gray-500 { color: #4b5563 !important; }
+
+    /* Dark Mode Contrast Improvements */
+    html.admin-dark .text-slate-400 { color: #cbd5e1 !important; }
+    html.admin-dark .text-slate-500 { color: #cbd5e1 !important; }
+    html.admin-dark .text-slate-600 { color: #f1f5f9 !important; }
+    html.admin-dark .text-gray-400 { color: #cbd5e1 !important; }
+    html.admin-dark .text-gray-500 { color: #cbd5e1 !important; }
+    html.admin-dark .text-slate-300 { color: #f1f5f9 !important; }
+
+    /* SweetAlert2 Styling & Contrast Enhancements */
+    .swal2-popup {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        border-radius: 1rem !important;
+        padding: 2rem !important;
+    }
+    .swal2-title {
+        color: #1e293b !important;
+        font-weight: 700 !important;
+    }
+    .swal2-html-container {
+        color: #475569 !important; /* Slate-600 for high visibility in light mode */
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+    }
+    .swal2-confirm {
+        background-color: #3b82f6 !important;
+        border-radius: 0.5rem !important;
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        padding: 0.625rem 1.25rem !important;
+    }
+    .swal2-cancel {
+        background-color: #6b7280 !important;
+        border-radius: 0.5rem !important;
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+        padding: 0.625rem 1.25rem !important;
+    }
+
+    /* Dark Mode SweetAlert2 Overrides */
+    html.admin-dark .swal2-popup {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    }
+    html.admin-dark .swal2-title {
+        color: #f0f6fc !important;
+    }
+    html.admin-dark .swal2-html-container {
+        color: #c9d1d9 !important;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex font-sans">
+
+  <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+  <aside id="adminSidebar"
+    class="bg-slate-900 text-slate-300 w-64 h-screen flex flex-col justify-between fixed md:sticky top-0 z-40 transition-all duration-300 transform -translate-x-full md:translate-x-0 shadow-xl flex-shrink-0">
+    <div class="flex flex-col flex-1 overflow-hidden">
+
+      <!-- Brand -->
+      <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3 flex-shrink-0">
+        <div class="flex-shrink-0 sidebar-logo-icon flex items-center justify-center">
+          <img src="img/new-logo.png" alt="Biringan Academy Logo" class="h-9 w-auto object-contain" />
+        </div>
+        <div>
+          <h1 class="font-bold text-white text-sm tracking-wide uppercase leading-none">Biringan Academy</h1>
+          <span class="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">Admin Portal</span>
+        </div>
+      </div>
+
+      <!-- Admin Profile -->
+      <div class="p-5 border-b border-slate-800 flex items-center gap-3 flex-shrink-0">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow flex-shrink-0">
+          <i class="fas fa-user-shield text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <h4 id="adminDisplayName" class="font-semibold text-white text-sm leading-tight truncate">System Admin</h4>
+          <span class="text-xs text-slate-400">Administrator</span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="flex-1 py-5 px-4 space-y-1 overflow-y-auto">
+        <button id="tabBtnDashboard" onclick="showAdminTab('dashboard', this)"
+          class="admin-tab w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all duration-200 bg-blue-600 text-white">
+          <i class="fas fa-chart-pie text-base min-w-[20px] text-center"></i>
+          <span>Dashboard</span>
+        </button>
+        <button id="tabBtnEnrollments" onclick="showAdminTab('enrollments', this)"
+          class="admin-tab w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <i class="fas fa-file-signature text-base min-w-[20px] text-center"></i>
+          <span>Applications</span>
+          <span id="pendingBadge" class="ml-auto bg-yellow-400 text-yellow-900 text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full hidden">0</span>
+        </button>
+        <button id="tabBtnStudents" onclick="showAdminTab('students', this)"
+          class="admin-tab w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <i class="fas fa-user-graduate text-base min-w-[20px] text-center"></i>
+          <span>Enrolled Students</span>
+        </button>
+        <button id="tabBtnSections" onclick="showAdminTab('sections', this)"
+          class="admin-tab w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <i class="fas fa-layer-group text-base min-w-[20px] text-center"></i>
+          <span>Manage Sections</span>
+        </button>
+        <button id="tabBtnTeachers" onclick="showAdminTab('teachers', this)"
+          class="admin-tab w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <i class="fas fa-chalkboard-teacher text-base min-w-[20px] text-center"></i>
+          <span>Manage Teachers</span>
+        </button>
+        <button id="tabBtnCurriculum" onclick="showAdminTab('curriculum', this)"
+          class="admin-tab w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <i class="fas fa-book-open text-base min-w-[20px] text-center"></i>
+          <span>Curriculum</span>
+        </button>
+        <button id="tabBtnFees" onclick="showAdminTab('fees', this)"
+          class="admin-tab w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <i class="fas fa-file-invoice-dollar text-base min-w-[20px] text-center"></i>
+          <span>Fees &amp; Vouchers</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-slate-800 space-y-1 flex-shrink-0">
+      <button onclick="showChangePasswordModal()"
+        class="w-full text-left px-4 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition-all">
+        <i class="fas fa-key text-xs min-w-[16px] text-center"></i>
+        <span>Change Password</span>
+      </button>
+      <button onclick="exportDatabaseSQL()"
+        class="w-full text-left px-4 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition-all">
+        <i class="fas fa-file-export text-xs min-w-[16px] text-center text-blue-400"></i>
+        <span>Export Database (SQL)</span>
+      </button>
+      <button onclick="logoutAdmin()"
+        class="w-full text-left px-4 py-2.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-950/30 hover:text-red-300 flex items-center gap-3 transition-all">
+        <i class="fas fa-sign-out-alt text-xs min-w-[16px] text-center"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity duration-300"
+    onclick="toggleSidebar()"></div>
+
+  <!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
+  <div class="flex-grow min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- Topbar -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition mr-2">
+          <i class="fas fa-bars text-lg"></i>
+        </button>
+        <h2 id="topbarPageTitle" class="font-bold text-slate-800 text-lg">Enrollment Applications</h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold px-2.5 py-1 bg-green-50 text-green-700 rounded-full border border-green-200 flex items-center gap-1.5 shadow-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          Database Synced
+        </span>
+        <!-- Dark Mode Toggle -->
+        <button id="darkModeBtn" onclick="toggleAdminDarkMode()"
+          title="Toggle dark mode"
+          class="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 flex items-center justify-center transition-all duration-200 shadow-sm">
+          <i id="darkModeIcon" class="fas fa-moon text-sm"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-grow p-6 md:p-8">
+      <div class="max-w-6xl mx-auto">
+
+        <!-- Welcome Banner -->
+        <div class="dashboard-widget bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-md p-6 text-white mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 class="text-2xl font-bold mb-1 flex items-center gap-2">
+              <i class="fas fa-user-shield"></i>
+              Welcome back, Admin!
+            </h2>
+            <p class="text-blue-100 text-sm">Monitor applications, coordinate curriculum, and review school tuition voucher settings.</p>
+          </div>
+          <div id="currentDateTime" class="text-blue-200 text-xs font-medium hidden md:block text-right"></div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="dashboard-widget grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition duration-200">
+            <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl flex-shrink-0">
+              <i class="fas fa-users"></i>
+            </div>
+            <div>
+              <span class="block text-slate-400 text-xs font-semibold tracking-wide uppercase">Total Students</span>
+              <h3 id="statTotalStudents" class="text-2xl font-bold text-slate-800 mt-0.5 tabular-nums">—</h3>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition duration-200">
+            <div class="w-11 h-11 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-xl flex-shrink-0">
+              <i class="fas fa-user-check"></i>
+            </div>
+            <div>
+              <span class="block text-slate-400 text-xs font-semibold tracking-wide uppercase">Enrolled</span>
+              <h3 id="statEnrolled" class="text-2xl font-bold text-slate-800 mt-0.5 tabular-nums">—</h3>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition duration-200">
+            <div class="w-11 h-11 rounded-xl bg-yellow-50 text-yellow-500 flex items-center justify-center text-xl flex-shrink-0">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div>
+              <span class="block text-slate-400 text-xs font-semibold tracking-wide uppercase">Pending</span>
+              <h3 id="statPending" class="text-2xl font-bold text-slate-800 mt-0.5 tabular-nums">—</h3>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition duration-200">
+            <div class="w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center text-xl flex-shrink-0">
+              <i class="fas fa-times-circle"></i>
+            </div>
+            <div>
+              <span class="block text-slate-400 text-xs font-semibold tracking-wide uppercase">Rejected</span>
+              <h3 id="statRejected" class="text-2xl font-bold text-slate-800 mt-0.5 tabular-nums">—</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════ ANALYTICS CHARTS ══════════════ -->
+        <div class="dashboard-widget grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
+
+          <!-- Enrollment Trend (line) — spans 2 cols -->
+          <div class="chart-card lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-1">
+              <div>
+                <h4 class="chart-card-title font-bold text-slate-800 text-sm">Monthly Enrollment Trend</h4>
+                <p class="chart-card-sub text-xs text-slate-400 mt-0.5">Applications received per month (last 6 months)</p>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-chart-line text-sm"></i>
+              </div>
+            </div>
+            <div class="relative" style="height:220px">
+              <canvas id="chartTrend"></canvas>
+            </div>
+          </div>
+
+          <!-- Strand Distribution (donut) -->
+          <div class="chart-card bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between mb-1">
+              <div>
+                <h4 class="chart-card-title font-bold text-slate-800 text-sm">Enrollment by Strand</h4>
+                <p class="chart-card-sub text-xs text-slate-400 mt-0.5">All students (approved)</p>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-chart-pie text-sm"></i>
+              </div>
+            </div>
+            <div class="relative flex-1" style="height:200px">
+              <canvas id="chartStrand"></canvas>
+            </div>
+          </div>
+
+          <!-- Status Breakdown (bar) -->
+          <div class="chart-card lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-1">
+              <div>
+                <h4 class="chart-card-title font-bold text-slate-800 text-sm">Application Status Overview</h4>
+                <p class="chart-card-sub text-xs text-slate-400 mt-0.5">Count of students per status and grade level</p>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-chart-bar text-sm"></i>
+              </div>
+            </div>
+            <div class="relative" style="height:200px">
+              <canvas id="chartStatus"></canvas>
+            </div>
+          </div>
+
+        </div>
+        <!-- ══════════════ END CHARTS ══════════════ -->
+
+        <!-- Main Content Card -->
+        <div id="mainContentCard" class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm hidden">
+
+          <!-- ── ENROLLMENTS TAB ── -->
+          <div id="enrollmentsTab" class="admin-content hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+              <h3 class="text-xl font-semibold text-slate-800">Enrollment Applications</h3>
+              <input type="text" id="searchEnrollments" oninput="renderEnrollmentsTable()"
+                placeholder="Search by name or email…"
+                class="w-full sm:w-60 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+            </div>
+
+            <!-- Status Filter Pills -->
+            <div class="flex flex-wrap gap-2 mb-5">
+              <button data-filter="all" onclick="setEnrollmentFilter('all', this)"
+                class="enroll-filter px-3.5 py-1.5 rounded-full text-xs font-semibold border transition bg-slate-800 text-white border-slate-700">All</button>
+              <button data-filter="pending" onclick="setEnrollmentFilter('pending', this)"
+                class="enroll-filter px-3.5 py-1.5 rounded-full text-xs font-semibold border transition bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100">Pending</button>
+              <button data-filter="rejected" onclick="setEnrollmentFilter('rejected', this)"
+                class="enroll-filter px-3.5 py-1.5 rounded-full text-xs font-semibold border transition bg-red-50 text-red-700 border-red-300 hover:bg-red-100">Rejected</button>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-100">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Student Name</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Level</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Strand</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Applied On</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="enrollmentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ── STUDENTS TAB ── -->
+          <div id="studentsTab" class="admin-content hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+              <h3 class="text-xl font-semibold text-slate-800">Enrolled Students</h3>
+              <input type="text" id="searchStudents" oninput="renderStudentsTable()"
+                placeholder="Search by name, ID, section…"
+                class="w-full sm:w-60 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+            </div>
+
+            <!-- Level Filter Pills -->
+            <div class="flex flex-wrap gap-2 mb-5">
+              <button data-filter="all" onclick="setStudentFilter('all', this)"
+                class="student-filter px-3.5 py-1.5 rounded-full text-xs font-semibold border transition bg-slate-800 text-white border-slate-700">All</button>
+              <button data-filter="junior" onclick="setStudentFilter('junior', this)"
+                class="student-filter px-3.5 py-1.5 rounded-full text-xs font-semibold border transition bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100">Junior High</button>
+              <button data-filter="senior" onclick="setStudentFilter('senior', this)"
+                class="student-filter px-3.5 py-1.5 rounded-full text-xs font-semibold border transition bg-green-50 text-green-700 border-green-300 hover:bg-green-100">Senior High</button>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-100">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Student ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Level / Strand</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Section</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Payment Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Enrolled On</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ── SECTIONS TAB ── -->
+          <div id="sectionsTab" class="admin-content hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h3 class="text-xl font-bold text-slate-800">Class Sections</h3>
+                <p class="text-sm text-slate-400 mt-0.5">Manage class sections and assign students</p>
+                <div class="flex items-center gap-2 mt-3">
+                  <button onclick="openSectionModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                    <i class="fas fa-plus"></i> Add Section
+                  </button>
+                </div>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-3">
+                <select id="sectionLevelSelect" onchange="updateSectionStrandVisibility(); renderSectionsTab();" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white outline-none">
+                  <option value="junior">Junior High School</option>
+                  <option value="senior">Senior High School</option>
+                </select>
+                <select id="sectionGradeSelect" onchange="renderSectionsTab()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white outline-none">
+                  <!-- JS populated -->
+                </select>
+                <select id="sectionStrandSelect" onchange="renderSectionsTab()" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white outline-none hidden">
+                  <option value="STEM">STEM</option>
+                  <option value="ABM">ABM</option>
+                  <option value="HUMSS">HUMSS</option>
+                  <option value="TVL-HE">TVL-HE</option>
+                  <option value="TVL-ICT">TVL-ICT</option>
+                  <option value="TVL-IA">TVL-IA</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Sections List -->
+                <div class="flex-grow">
+                    <h4 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wide">Available Sections</h4>
+                    <div id="sectionsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                        <!-- JS populated -->
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <!-- ── CURRICULUM TAB ── -->
+          <div id="curriculumTab" class="admin-content hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h3 class="text-xl font-bold text-slate-800">High School Curriculum &amp; Subjects</h3>
+                <p class="text-sm text-slate-400 mt-0.5">Official K-12 subjects per grade level and strand</p>
+                <button onclick="openSubjectModal()" class="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                  <i class="fas fa-plus"></i> Add Subject
+                </button>
+              </div>
+              <select id="curriculumLevelSelect" onchange="renderCurriculumSubjects()"
+                class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white outline-none">
+                <option value="jhs">Junior High School (Grades 7–10)</option>
+                <option value="stem">Senior High — STEM Strand</option>
+                <option value="abm">Senior High — ABM Strand</option>
+                <option value="humss">Senior High — HUMSS Strand</option>
+                <option value="tvl-he">Senior High — TVL Home Economics</option>
+                <option value="tvl-ict">Senior High — TVL ICT</option>
+                <option value="tvl-ia">Senior High — TVL Industrial Arts</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="curriculumGrid"></div>
+          </div>
+
+          <!-- ── TEACHERS TAB ── -->
+          <div id="teachersTab" class="admin-content hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div>
+                <h3 class="text-xl font-bold text-slate-800">Teachers</h3>
+                <p class="text-sm text-slate-400 mt-0.5">Manage teaching staff and departments</p>
+                <button onclick="openTeacherModal()" class="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                  <i class="fas fa-plus"></i> Add Teacher
+                </button>
+              </div>
+              <input type="text" id="searchTeachers" oninput="renderTeachersTab()"
+                placeholder="Search teachers by name..."
+                class="w-full sm:w-60 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th class="px-6 py-3 font-semibold text-slate-700 uppercase tracking-wider text-xs">Name</th>
+                    <th class="px-6 py-3 font-semibold text-slate-700 uppercase tracking-wider text-xs">Department</th>
+                    <th class="px-6 py-3 font-semibold text-slate-700 uppercase tracking-wider text-xs text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="teachersTableBody" class="divide-y divide-slate-100">
+                  <!-- JS populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ── FEES TAB ── -->
+          <div id="feesTab" class="admin-content hidden">
+            <div class="mb-6">
+              <h3 class="text-xl font-bold text-slate-800">Tuition Fees &amp; Voucher Settings</h3>
+              <p class="text-sm text-slate-400 mt-0.5">Schedule of fees and government voucher subsidy values</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="rounded-xl border border-slate-200 p-6">
+                <div class="flex items-center gap-3 mb-5">
+                  <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg"><i class="fas fa-graduation-cap text-lg"></i></div>
+                  <div>
+                    <h4 class="font-bold text-slate-800">Junior High School (JHS)</h4>
+                    <p class="text-xs text-slate-400">Applicable for Grades 7 to 10</p>
+                  </div>
+                </div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Base Tuition Fee:</span><span class="font-semibold">₱12,000.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Registration Fee:</span><span class="font-semibold">₱500.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Laboratory Fee:</span><span class="font-semibold">₱1,000.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Library Fee:</span><span class="font-semibold">₱500.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Student ID Fee:</span><span class="font-semibold">₱200.00</span></div>
+                  <div class="flex justify-between font-bold pt-1 text-blue-700"><span>Total School Fees:</span><span>₱14,200.00</span></div>
+                </div>
+              </div>
+              <div class="rounded-xl border border-slate-200 p-6">
+                <div class="flex items-center gap-3 mb-5">
+                  <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg"><i class="fas fa-university text-lg"></i></div>
+                  <div>
+                    <h4 class="font-bold text-slate-800">Senior High School (SHS)</h4>
+                    <p class="text-xs text-slate-400">Applicable for Grade 11 &amp; Grade 12 Strands</p>
+                  </div>
+                </div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Base Tuition Fee:</span><span class="font-semibold">₱20,000.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Registration Fee:</span><span class="font-semibold">₱500.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Laboratory Fee:</span><span class="font-semibold">₱1,500.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Library Fee:</span><span class="font-semibold">₱500.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Student ID Fee:</span><span class="font-semibold">₱200.00</span></div>
+                  <div class="flex justify-between border-b border-slate-100 pb-2"><span class="text-slate-500">Uniform Fee (Required):</span><span class="font-semibold">₱3,000.00</span></div>
+                  <div class="flex justify-between font-bold pt-1 text-blue-700"><span>Total School Fees:</span><span>₱25,700.00</span></div>
+                </div>
+              </div>
+              <div class="rounded-xl border border-slate-200 p-6 lg:col-span-2">
+                <div class="flex items-center gap-3 mb-5">
+                  <div class="p-2.5 bg-green-50 text-green-600 rounded-lg"><i class="fas fa-ticket-alt text-lg"></i></div>
+                  <div>
+                    <h4 class="font-bold text-slate-800">DepEd &amp; ESC Voucher Subsidies</h4>
+                    <p class="text-xs text-slate-400">Government financial assistance details</p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Public High School Graduate</span>
+                    <h5 class="text-xl font-bold text-green-600 mb-2">100% School Subsidy</h5>
+                    <p class="text-xs text-slate-500">Covers 100% of standard tuition, registration, lab, library, and student ID fees. Only the uniform fee remains payable by the student.</p>
+                  </div>
+                  <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Private High School Graduate</span>
+                    <h5 class="text-xl font-bold text-green-600 mb-2">₱17,500.00 Fixed Subsidy</h5>
+                    <p class="text-xs text-slate-500">Covers up to ₱17,500.00 of total fees. The remaining school fees balance (including the uniform fee) is paid by the student.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /main card -->
+      </div>
+    </main>
+  </div><!-- /main -->
+
+  <!-- ═══════════════════════ PROFILE DRAWER ═══════════════════════ -->
+  <div id="profileDrawerOverlay"
+    class="fixed inset-0 bg-black/50 z-[60] hidden opacity-0 transition-opacity duration-300"
+    onclick="closeProfileDrawer()"></div>
+
+  <aside id="profileDrawer"
+    class="fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-2xl z-[70] transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-user-graduate text-sm"></i>
+        </div>
+        <div>
+          <h3 id="drawerStudentName" class="font-bold text-slate-800 text-base leading-tight">Student Profile</h3>
+          <p id="drawerStudentId" class="text-xs text-slate-400 font-mono">—</p>
+        </div>
+      </div>
+      <button onclick="closeProfileDrawer()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+    <div id="drawerContent" class="flex-1 overflow-y-auto p-6 space-y-5"></div>
+  </aside>
+
+  <!-- ═══════════════════════ REVIEW MODAL ═══════════════════════ -->
+  <div id="enrollmentReviewModal"
+    class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Enrollment Review</h2>
+          <p id="reviewModalSubtitle" class="text-xs text-slate-400 mt-0.5">Review applicant information before approving or rejecting.</p>
+        </div>
+        <button onclick="closeEnrollmentReviewModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable Student Data -->
+      <div id="reviewStudentDetails" class="flex-1 overflow-y-auto px-6 py-5 space-y-4"></div>
+
+      <!-- Sticky Action Footer -->
+      <div class="border-t border-slate-200 px-6 py-5 bg-slate-50 flex-shrink-0 space-y-4">
+        <!-- Verification Checkboxes -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-700 mb-2.5">
+            <i class="fas fa-shield-alt text-blue-500 mr-1.5"></i>Document Verification
+          </h4>
+          <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="verifyPublicSchool" type="checkbox" class="rounded text-blue-600 w-4 h-4">
+              <span>Public school graduate verified</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="verifyLRN" type="checkbox" class="rounded text-blue-600 w-4 h-4">
+              <span>LRN verified</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="verifyPreviousSchool" type="checkbox" class="rounded text-blue-600 w-4 h-4">
+              <span>Previous school records verified</span>
+            </label>
+          </div>
+          <textarea id="adminNotes" rows="2" placeholder="Admin notes (optional)…"
+            class="w-full mt-3 px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 outline-none bg-white"></textarea>
+        </div>
+
+        <!-- Section & Email Assignment -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-700 mb-2.5">
+            <i class="fas fa-cog text-blue-500 mr-1.5"></i>Account Assignment
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Auto-Assigned Section <span class="text-red-500">*</span></label>
+              <input id="reviewSection" type="text" readonly placeholder="Auto-calculated section"
+                class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-slate-100 text-slate-500 cursor-not-allowed outline-none font-semibold font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Portal Email <span class="text-red-500">*</span></label>
+              <input id="reviewEmail" type="email" placeholder="Verify / update portal email"
+                class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 pt-1">
+          <button id="approveBtn" onclick="approveEnrollment()"
+            class="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button id="rejectBtn" onclick="rejectEnrollment()"
+            class="flex-1 min-w-[120px] bg-red-600 hover:bg-red-700 text-white py-2.5 px-4 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ CHANGE PASSWORD MODAL ═══════════════════════ -->
+  <div id="changePasswordModal"
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div id="changePasswordModalContent"
+      class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-slate-800">
+          <i class="fas fa-key mr-2 text-blue-500"></i>Change Password
+        </h2>
+        <button onclick="hideChangePasswordModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <form id="changePasswordForm" class="space-y-4" onsubmit="submitChangePassword(event)">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Current Password</label>
+          <div class="relative">
+            <input id="changeCurrentPassword" type="password" required placeholder="Enter current password"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none pr-10" />
+            <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-slate-400 hover:text-slate-600"
+              onclick="togglePasswordVisibility('changeCurrentPassword','currentPasswordIcon')">
+              <i id="currentPasswordIcon" class="fas fa-eye"></i>
+            </span>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">New Password</label>
+          <div class="relative">
+            <input id="changeNewPassword" type="password" required placeholder="Min. 6 characters"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none pr-10" />
+            <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-slate-400 hover:text-slate-600"
+              onclick="togglePasswordVisibility('changeNewPassword','newPasswordIcon')">
+              <i id="newPasswordIcon" class="fas fa-eye"></i>
+            </span>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Confirm New Password</label>
+          <div class="relative">
+            <input id="changeConfirmPassword" type="password" required placeholder="Confirm new password"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none pr-10" />
+            <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-slate-400 hover:text-slate-600"
+              onclick="togglePasswordVisibility('changeConfirmPassword','confirmPasswordIcon')">
+              <i id="confirmPasswordIcon" class="fas fa-eye"></i>
+            </span>
+          </div>
+        </div>
+        <button type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition">
+          Update Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SUBJECT MANAGEMENT MODAL ═══════════════════════ -->
+  <div id="subjectModal"
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div id="subjectModalContent"
+      class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="subjectModalTitle" class="text-xl font-bold text-slate-800">
+          <i class="fas fa-book mr-2 text-blue-500"></i>Add Subject
+        </h2>
+        <button onclick="hideSubjectModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <form id="subjectForm" class="space-y-4" onsubmit="saveSubject(event)">
+        <input type="hidden" id="subjectId" value="" />
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Track / Strand</label>
+          <select id="subjectLevelStrand" required
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="jhs">Junior High School (Grades 7–10)</option>
+            <option value="stem">Senior High — STEM Strand</option>
+            <option value="abm">Senior High — ABM Strand</option>
+            <option value="humss">Senior High — HUMSS Strand</option>
+            <option value="tvl-he">Senior High — TVL Home Economics</option>
+            <option value="tvl-ict">Senior High — TVL ICT</option>
+            <option value="tvl-ia">Senior High — TVL Industrial Arts</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Subject Code</label>
+          <input id="subjectCode" type="text" required placeholder="e.g. ENG-JHS"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Subject Name</label>
+          <input id="subjectName" type="text" required placeholder="e.g. English"
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
+          <textarea id="subjectDescription" rows="3" placeholder="Brief overview of the subject..."
+            class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+        </div>
+        
+        <button type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition mt-2 flex items-center justify-center gap-2">
+          <i class="fas fa-save"></i> Save Subject
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SECTION MODAL ═══════════════════════ -->
+  <div id="sectionModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div id="sectionModalContent" class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-slate-800">
+          <i class="fas fa-layer-group mr-2 text-blue-500"></i>Add Section
+        </h2>
+        <button onclick="hideSectionModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <form id="sectionForm" class="space-y-4" onsubmit="saveSection(event)">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Section Name</label>
+          <input id="sectionName" type="text" required placeholder="e.g. A, B, Rizal, Bonifacio" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Max Students</label>
+          <input id="sectionMaxStudents" type="number" required min="1" max="100" value="40" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition mt-2 flex items-center justify-center gap-2">
+          <i class="fas fa-save"></i> Save Section
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ TEACHER MODAL ═══════════════════════ -->
+  <div id="teacherModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div id="teacherModalContent" class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-slate-800">
+          <i class="fas fa-chalkboard-teacher mr-2 text-blue-500"></i>Add Teacher
+        </h2>
+        <button onclick="hideTeacherModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <form id="teacherForm" class="space-y-4" onsubmit="saveTeacher(event)">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Teacher Name</label>
+          <input id="teacherName" type="text" required placeholder="e.g. Juan Dela Cruz" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1.5">Department (Optional)</label>
+          <input id="teacherDepartment" type="text" placeholder="e.g. Science Dept" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-sm transition mt-2 flex items-center justify-center gap-2">
+          <i class="fas fa-save"></i> Save Teacher
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SECTION ROSTER MODAL ═══════════════════════ -->
+  <div id="sectionRosterModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div id="sectionRosterModalContent" class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 flex flex-col max-h-[90vh]">
+      <div class="flex justify-between items-center mb-6 flex-shrink-0">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">
+            <i class="fas fa-users mr-2 text-blue-500"></i>Section Roster: <span id="rosterSectionNameTitle" class="text-blue-600"></span>
+          </h2>
+          <p id="rosterSectionSubtitle" class="text-xs text-slate-400 mt-1"></p>
+        </div>
+        <button onclick="hideRosterModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Capacity & Progress -->
+      <div class="mb-6 bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 flex-shrink-0">
+        <div class="w-full sm:w-2/3">
+          <div class="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+            <span>Enrolled Capacity</span>
+            <span id="rosterCapacityText">0 / 40 Students</span>
+          </div>
+          <div class="w-full bg-slate-200 rounded-full h-2">
+            <div id="rosterCapacityBar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+        <button id="rosterEditScheduleBtn" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
+          <i class="fas fa-calendar-alt"></i> Edit Timetable
+        </button>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-6 overflow-hidden flex-grow min-h-0">
+        <!-- Student List in Section -->
+        <div class="w-full md:w-3/5 flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden min-h-0">
+          <div class="p-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+            <h3 class="font-bold text-sm text-slate-700">Enrolled Students</h3>
+            <span id="rosterCountBadge" class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full">0</span>
+          </div>
+          <div class="flex-grow overflow-y-auto p-4" id="rosterStudentsContainer">
+            <!-- Table or list of enrolled students -->
+          </div>
+        </div>
+
+        <!-- Add Student Panel -->
+        <div class="w-full md:w-2/5 flex flex-col bg-slate-50 rounded-xl border border-slate-200 overflow-hidden min-h-0">
+          <div class="p-3 bg-white border-b border-slate-200">
+            <h3 class="font-bold text-sm text-slate-700">Assign Students</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Unassigned students in this grade level</p>
+          </div>
+          <div class="flex-grow overflow-y-auto p-4 space-y-3" id="rosterUnassignedList">
+            <!-- Unassigned students of same grade -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SECTION SCHEDULE MODAL ═══════════════════════ -->
+  <div id="scheduleModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div id="scheduleModalContent" class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 flex flex-col max-h-[90vh]">
+      <div class="flex justify-between items-center mb-6 flex-shrink-0">
+        <h2 class="text-xl font-bold text-slate-800">
+          <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>Manage Schedule: <span id="scheduleSectionNameTitle" class="text-blue-600"></span>
+        </h2>
+        <button onclick="hideScheduleModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <div class="flex flex-col md:flex-row gap-6 overflow-hidden flex-grow">
+        
+        <!-- Schedule Form -->
+        <div class="w-full md:w-1/3 flex-shrink-0 overflow-y-auto pr-2">
+          <h3 class="font-bold text-sm text-slate-700 mb-4 border-b pb-2">Add Class</h3>
+          <form id="scheduleForm" class="space-y-4" onsubmit="saveSchedule(event)">
+            <input type="hidden" id="schedSectionId" />
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Subject</label>
+              <select id="schedSubject" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <!-- JS populated based on section level/strand -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Teacher</label>
+              <select id="schedTeacher" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <!-- JS populated -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Day</label>
+              <select id="schedDay" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+              </select>
+            </div>
+            <div class="flex gap-2">
+              <div class="w-1/2">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Start Time</label>
+                <input id="schedStartTime" type="time" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+              <div class="w-1/2">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">End Time</label>
+                <input id="schedEndTime" type="time" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Room (Optional)</label>
+              <input id="schedRoom" type="text" placeholder="e.g. Room 101" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-sm transition flex items-center justify-center gap-2">
+              <i class="fas fa-plus"></i> Add to Schedule
+            </button>
+          </form>
+        </div>
+
+        <!-- Schedule List -->
+        <div class="w-full md:w-2/3 flex flex-col bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <div class="p-3 bg-white border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2">
+                <h3 class="font-bold text-sm text-slate-700">Current Timetable</h3>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <select id="cloneScheduleSelect" class="flex-grow sm:flex-grow-0 px-2 py-1.5 border border-slate-200 rounded text-xs focus:ring-2 focus:ring-blue-500 outline-none bg-white sm:max-w-[150px]">
+                        <option value="">-- Clone From --</option>
+                    </select>
+                    <button onclick="cloneSchedule()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs font-medium transition whitespace-nowrap flex-shrink-0">
+                        <i class="fas fa-copy mr-1"></i> Clone
+                    </button>
+                </div>
+            </div>
+            <div class="flex-grow overflow-y-auto p-4">
+                <div id="scheduleListContainer" class="space-y-4">
+                    <!-- JS populated grouped by Day -->
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="javascript/sweetalert2.all.min.js"></script>
+  <script src="javascript/chart.umd.min.js"></script>
+  <script src="javascript/admin.js?v=2.0.2"></script>
+</body>
+</html>

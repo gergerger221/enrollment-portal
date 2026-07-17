@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enrollment Form - Academy of Biringan</title>
+  <script>
+    (function () {
+      const isDark = localStorage.getItem('darkMode') === 'enabled';
+      if (isDark) {
+        document.documentElement.classList.add('dark-mode');
+      }
+    })();
+  </script>
+  <script src="javascript/tailwind.js"></script>
+  <link rel="stylesheet" href="css/all.min.css" />
+  <script src="javascript/sweetalert2.all.min.js"></script>
+  <script src="javascript/vue.global.js"></script>
+  <link rel="stylesheet" href="css/styles.css?v=4" />
+</head>
+
+<body class="bg-gray-100 min-h-screen overflow-x-hidden pt-24">
+  <!-- Welcome Page Navigation -->
+  <nav id="welcomeNav" class="bg-blue-600 shadow-lg fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex justify-center items-center py-4 space-x-4">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='index.html'">
+          <img src="img/new-logo.png" alt="Academy of Biringan Logo" class="h-10 w-auto" />
+          <span class="text-white font-bold text-xl">JJKings Academy of Biringan</span>
+        </div>
+        <button onclick="window.location.href='index.html?faq=true'"
+          class="bg-white text-[#007dfe] px-4 py-2 rounded-lg hover:bg-gray-100 transition font-bold">
+          FAQ
+        </button>
+        <button onclick="window.location.href='index.html?login=true'"
+          class="bg-white text-[#004b87] px-4 py-2 rounded-lg hover:bg-gray-100 transition font-bold">
+          Login
+        </button>
+        <button class="bg-[#fbc707] text-[#004b87] px-4 py-2 rounded-lg transition font-bold cursor-default">
+          Enrollment Form
+        </button>
+        <select id="languageSelect" class="bg-blue-700 text-white px-3 py-2 rounded-lg border-none cursor-pointer"
+          onchange="changeLanguage(this.value)">
+          <option value="en">English</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="zh">中文</option>
+          <option value="ar">العربية</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="pt">Português</option>
+          <option value="ru">Русский</option>
+          <option value="hi">हिन्दी</option>
+          <option value="th">ไทย</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="tl">Filipino</option>
+          <option value="ceb">Cebuano</option>
+          <option value="ilo">Ilocano</option>
+          <option value="hil">Hiligaynon</option>
+        </select>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Registration Section -->
+  <section id="register-section" class="max-w-4xl mx-auto px-4 pb-16">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">Enrollment Form</h1>
+      <p class="text-xl text-gray-600">Start your enrollment journey at Academy of Biringan</p>
+    </div>
+
+    <!-- Progress Stepper -->
+    <div class="mb-8 border-b pb-6">
+      <div class="flex items-center justify-between max-w-4xl mx-auto">
+        <!-- Step 1 Indicator -->
+        <div class="flex flex-col items-center flex-1 relative" id="step-indicator-1">
+          <div
+            class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg border-4 border-indigo-100 z-10 step-circle transition-all">
+            1
+          </div>
+          <span class="text-xs font-semibold mt-2 text-indigo-600 step-label">Personal</span>
+          <div class="absolute left-1/2 top-5 w-full h-1 bg-gray-200 -z-0 step-line"></div>
+        </div>
+        <!-- Step 2 Indicator -->
+        <div class="flex flex-col items-center flex-1 relative" id="step-indicator-2">
+          <div
+            class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-lg border-4 border-white z-10 step-circle transition-all">
+            2
+          </div>
+          <span class="text-xs font-semibold mt-2 text-gray-400 step-label">Address</span>
+          <div class="absolute left-1/2 top-5 w-full h-1 bg-gray-200 -z-0 step-line"></div>
+        </div>
+        <!-- Step 3 Indicator -->
+        <div class="flex flex-col items-center flex-1 relative" id="step-indicator-3">
+          <div
+            class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-lg border-4 border-white z-10 step-circle transition-all">
+            3
+          </div>
+          <span class="text-xs font-semibold mt-2 text-gray-400 step-label">Academics</span>
+          <div class="absolute left-1/2 top-5 w-full h-1 bg-gray-200 -z-0 step-line"></div>
+        </div>
+        <!-- Step 4 Indicator -->
+        <div class="flex flex-col items-center flex-1 relative" id="step-indicator-4">
+          <div
+            class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-lg border-4 border-white z-10 step-circle transition-all">
+            4
+          </div>
+          <span class="text-xs font-semibold mt-2 text-gray-400 step-label">Parents</span>
+          <div class="absolute left-1/2 top-5 w-full h-1 bg-gray-200 -z-0 step-line"></div>
+        </div>
+        <!-- Step 5 Indicator -->
+        <div class="flex flex-col items-center flex-1 relative" id="step-indicator-5">
+          <div
+            class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-lg border-4 border-white z-10 step-circle transition-all">
+            5
+          </div>
+          <span class="text-xs font-semibold mt-2 text-gray-400 step-label">Documents</span>
+          <div class="absolute left-1/2 top-5 w-full h-1 bg-gray-200 -z-0 step-line"></div>
+        </div>
+        <!-- Step 6 Indicator -->
+        <div class="flex flex-col items-center flex-1 relative" id="step-indicator-6">
+          <div
+            class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-lg border-4 border-white z-10 step-circle transition-all">
+            6
+          </div>
+          <span class="text-xs font-semibold mt-2 text-gray-400 step-label">Review & Submit</span>
+        </div>
+      </div>
+    </div>
+
+    <form id="registerModalForm" class="space-y-4" novalidate>
+      <!-- Step 1: Personal Information -->
+      <div class="form-step" data-step="1">
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-user mr-2"></i>Personal Information
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Family Name *</label>
+              <input type="text" id="modalLastName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter your family name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Given Name *</label>
+              <input type="text" id="modalFirstName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter your given name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Middle Name *</label>
+              <input type="text" id="modalMiddleName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter your middle name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Suffix (Optional)</label>
+              <input type="text" id="modalSuffix"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="e.g., Jr., III" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Date of Birth *</label>
+              <input type="date" id="modalDob" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Gender *</label>
+              <select id="modalGender" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">-- Select Gender --</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Civil Status *</label>
+              <select id="modalCivilStatus" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">-- Select Civil Status --</option>
+                <option value="single">Single</option>
+                <option value="married">Married</option>
+                <option value="widowed">Widowed</option>
+                <option value="separated">Separated</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Nationality *</label>
+              <select id="modalNationality" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">-- Select Nationality --</option>
+                <option value="filipino">Filipino</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Religion *</label>
+              <select id="modalReligion" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">-- Select Religion --</option>
+                <option value="roman-catholic">Roman Catholic</option>
+                <option value="islam">Islam</option>
+                <option value="protestant">Protestant</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Dialect/Language *</label>
+              <input type="text" id="modalDialect" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter dialect/language" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Place of Birth *</label>
+              <input type="text" id="modalPlaceOfBirth" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter place of birth" />
+            </div>
+          </div>
+          <!-- Bottom Buttons for Step 1 -->
+          <div class="flex justify-end pt-6">
+            <button type="button" onclick="validateAndConfirmStep(1)"
+              class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition font-medium text-lg flex items-center">
+              Next <i class="fas fa-arrow-right ml-2 text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Address and Contact Information -->
+      <div class="form-step hidden" data-step="2">
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-map-marker-alt mr-2"></i>Address and Contact Information
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Complete Address *</label>
+              <textarea id="modalAddress" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                rows="2" placeholder="Enter complete address"></textarea>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Zip Code *</label>
+              <input type="text" id="modalZipCode" required maxlength="4"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter zip code" pattern="[0-9]{4}"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,4)" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Mobile No. *</label>
+              <div class="flex">
+                <span
+                  class="inline-flex items-center px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600 font-semibold text-sm select-none whitespace-nowrap">+63</span>
+                <input type="tel" id="modalPhone" required maxlength="10" pattern="[0-9]{10}"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="9XXXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)" />
+              </div>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Email Address *</label>
+              <input type="email" id="modalEmail" required pattern="^[a-zA-Z0-9._%+\-]+@gmail\.com$"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="example@gmail.com" oninput="validateGmailField(this)" />
+              <span id="emailValidationMsg" class="text-xs mt-1 block hidden"></span>
+            </div>
+          </div>
+          <!-- Bottom Buttons for Step 2 -->
+          <div class="flex justify-between pt-6">
+            <button type="button" onclick="prevStep(2)"
+              class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-300 transition font-medium text-lg flex items-center">
+              <i class="fas fa-arrow-left mr-2 text-sm"></i> Back
+            </button>
+            <button type="button" onclick="validateAndConfirmStep(2)"
+              class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition font-medium text-lg flex items-center">
+              Next <i class="fas fa-arrow-right ml-2 text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Educational and Academic Information -->
+      <div class="form-step hidden" data-step="3">
+        <!-- Educational Background -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-school mr-2"></i>Educational Background
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">
+                Elementary School *
+              </label>
+              <input type="text" id="modalElementarySchool" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter elementary school name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Year finished *</label>
+              <input type="number" id="modalElementaryYearGraduated" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="e.g., 2020" min="1990" max="2026" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">LRN (Learner Reference Number) *</label>
+              <input type="text" id="modalLRN" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter LRN" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">
+                Previous School *
+              </label>
+              <input type="text" id="modalHighSchool" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter previous school name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Year finished *</label>
+              <input type="number" id="modalHighSchoolYearGraduated" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="e.g., 2024" min="1990" max="2026" />
+            </div>
+            <div class="flex items-end pb-3">
+              <label class="flex items-center">
+                <input type="checkbox" id="modalPublicSchoolGraduate" class="mr-2" />
+                <span class="text-gray-700 font-medium">Public School Graduate</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-graduation-cap mr-2"></i>Grade to Enroll
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Level *</label>
+              <select id="modalLevel" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                onchange="toggleGradeStrandSelection()">
+                <option value="">-- Select Level --</option>
+                <option value="grade-7">Junior High Grade 7</option>
+                <option value="grade-8">Junior High Grade 8</option>
+                <option value="grade-9">Junior High Grade 9</option>
+                <option value="grade-10">Junior High Grade 10</option>
+                <option value="senior-high-11">Senior High School - Grade 11</option>
+                <option value="senior-high-12">Senior High School - Grade 12</option>
+              </select>
+            </div>
+            <div class="col-span-2" id="gradeLevelContainer" style="display: none;">
+              <label class="block text-gray-700 font-medium mb-2">Grade Level *</label>
+              <select id="modalGradeLevel"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">-- Select Grade Level --</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+                <option value="9">Grade 9</option>
+                <option value="10">Grade 10</option>
+              </select>
+            </div>
+            <div class="col-span-2" id="strandContainer" style="display: none;">
+              <label class="block text-gray-700 font-medium mb-2">Strand *</label>
+              <select id="modalStrand"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="">-- Select Strand --</option>
+                <option value="tvl-css">TVL - Computer System Servicing (CSS)</option>
+                <option value="tvl-ict">TVL - Information & Communications Technology (ICT)</option>
+                <option value="tvl-he">TVL - Home Economics (HE)</option>
+                <option value="stem">STEM</option>
+                <option value="abm">ABM</option>
+                <option value="humss">HUMSS</option>
+              </select>
+            </div>
+            <div class="col-span-2" id="voucherEligibilityContainer" style="display: none;">
+              <label class="block text-gray-700 font-medium mb-2">Voucher Eligibility *</label>
+              <select id="modalVoucherEligibility"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                onchange="updatePaymentSummary()">
+                <option value="">-- Select --</option>
+                <option value="public-school">From Public School (Voucher Eligible)</option>
+                <option value="private-school">From Private School (No Voucher)</option>
+                <option value="same-school">Grade 10 Graduate from Academy of Biringan (Apply for Voucher)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Buttons for Step 3 -->
+        <div class="flex justify-between pt-6">
+          <button type="button" onclick="prevStep(3)"
+            class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-300 transition font-medium text-lg flex items-center">
+            <i class="fas fa-arrow-left mr-2 text-sm"></i> Back
+          </button>
+          <button type="button" onclick="validateAndConfirmStep(3)"
+            class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition font-medium text-lg flex items-center">
+            Next <i class="fas fa-arrow-right ml-2 text-sm"></i>
+          </button>
+        </div>
+      </div>
+      </div>
+
+      <!-- Step 4: Parent and Guardian Information & Submit -->
+      <div class="form-step hidden" data-step="4">
+        <!-- Father Information -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-user-tie mr-2"></i>Father Information
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Family Name *</label>
+              <input type="text" id="modalFatherLastName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter father's family name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Given Name *</label>
+              <input type="text" id="modalFatherFirstName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter father's given name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Middle Name *</label>
+              <input type="text" id="modalFatherMiddleName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter father's middle name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Mobile No. *</label>
+              <div class="flex">
+                <span
+                  class="inline-flex items-center px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600 font-semibold text-sm select-none whitespace-nowrap">+63</span>
+                <input type="tel" id="modalFatherPhone" required maxlength="10" pattern="[0-9]{10}"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="9XXXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Occupation *</label>
+              <input type="text" id="modalFatherOccupation" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter occupation" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Address *</label>
+              <textarea id="modalFatherAddress" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                rows="2" placeholder="Enter father's address"></textarea>
+            </div>
+            <div class="col-span-2">
+              <label class="flex items-center">
+                <input type="checkbox" id="modalFatherDeceased" class="mr-2" />
+                <span class="text-gray-700">Father is Deceased</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mother Information -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-user mr-2"></i>Mother Information
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Family Name *</label>
+              <input type="text" id="modalMotherLastName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter mother's family name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Given Name *</label>
+              <input type="text" id="modalMotherFirstName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter mother's given name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Middle Name *</label>
+              <input type="text" id="modalMotherMiddleName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter mother's middle name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Maiden Middle Name *</label>
+              <input type="text" id="modalMotherMaidenMiddleName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter maiden middle name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Mobile No. *</label>
+              <div class="flex">
+                <span
+                  class="inline-flex items-center px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600 font-semibold text-sm select-none whitespace-nowrap">+63</span>
+                <input type="tel" id="modalMotherPhone" required maxlength="10" pattern="[0-9]{10}"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="9XXXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Occupation *</label>
+              <input type="text" id="modalMotherOccupation" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter occupation" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Address *</label>
+              <textarea id="modalMotherAddress" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                rows="2" placeholder="Enter mother's address"></textarea>
+            </div>
+            <div class="col-span-2">
+              <label class="flex items-center">
+                <input type="checkbox" id="modalMotherDeceased" class="mr-2" />
+                <span class="text-gray-700">Mother is Deceased</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guardian Information -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-shield-alt mr-2"></i>Guardian Information
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Family Name *</label>
+              <input type="text" id="modalGuardianLastName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter guardian's family name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Given Name *</label>
+              <input type="text" id="modalGuardianFirstName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter guardian's given name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Middle Name *</label>
+              <input type="text" id="modalGuardianMiddleName" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter guardian's middle name" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Mobile No. *</label>
+              <div class="flex">
+                <span
+                  class="inline-flex items-center px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600 font-semibold text-sm select-none whitespace-nowrap">+63</span>
+                <input type="tel" id="modalGuardianPhone" required maxlength="10" pattern="[0-9]{10}"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="9XXXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Occupation *</label>
+              <input type="text" id="modalGuardianOccupation" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Enter occupation" />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Address *</label>
+              <textarea id="modalGuardianAddress" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                rows="2" placeholder="Enter guardian's address"></textarea>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Buttons for Step 4 -->
+        <div class="flex justify-between pt-6">
+          <button type="button" onclick="prevStep(4)"
+            class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-300 transition font-medium text-lg flex items-center">
+            <i class="fas fa-arrow-left mr-2 text-sm"></i> Back
+          </button>
+          <button type="button" onclick="validateAndConfirmStep(4)"
+            class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition font-medium text-lg flex items-center">
+            Next <i class="fas fa-arrow-right ml-2 text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 5: Document Requirements -->
+      <div class="form-step hidden" data-step="5">
+        <!-- Document Uploads (Simulation) -->
+        <div class="border-b pb-4 mt-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-file-upload mr-2"></i>Document Requirements
+          </h3>
+          <p class="text-sm text-gray-500 mb-4">Please upload scanned copies or clear photos of the following
+            requirements.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">PSA Birth Certificate *</label>
+              <input type="file" id="modalDocBirthCert" required accept="image/*,.pdf"
+                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition" />
+            </div>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Form 138 / Report Card *</label>
+              <input type="file" id="modalDocReportCard" required accept="image/*,.pdf"
+                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition" />
+            </div>
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-gray-700 font-medium mb-2">Certificate of Good Moral Character *</label>
+              <input type="file" id="modalDocGoodMoral" required accept="image/*,.pdf"
+                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Buttons for Step 5 -->
+        <div class="flex justify-between pt-6">
+          <button type="button" onclick="prevStep(5)"
+            class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-300 transition font-medium text-lg flex items-center">
+            <i class="fas fa-arrow-left mr-2 text-sm"></i> Back
+          </button>
+          <button type="button" onclick="validateAndConfirmStep(5)"
+            class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition font-medium text-lg flex items-center">
+            Next <i class="fas fa-arrow-right ml-2 text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 6: Review & Submit -->
+      <div class="form-step hidden" data-step="6">
+
+        <!-- Summary of Enrollment Card -->
+        <div id="enrollmentSummaryCard"
+          class="bg-gradient-to-br from-indigo-50/50 to-blue-50/50 border border-indigo-100 rounded-3xl p-8 mb-8 shadow-sm">
+          <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <i class="fas fa-id-card text-[#007dfe] mr-3 text-2xl"></i>Summary of Enrollment
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+            <!-- Column 1: Personal & Contact Profile -->
+            <div class="bg-white rounded-2xl p-5 border border-indigo-50 shadow-sm space-y-4">
+              <h4
+                class="text-sm font-bold text-indigo-600 uppercase tracking-wider border-b border-indigo-50 pb-2 mb-3">
+                <i class="fas fa-user-circle mr-2"></i>Personal & Contact Profile
+              </h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Enrollee
+                    Name</span>
+                  <span id="summaryEnrolleeName" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Gender &
+                    DOB</span>
+                  <span id="summaryGenderDob" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div class="col-span-2">
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Contact
+                    Details</span>
+                  <span id="summaryContactInfo" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div class="col-span-2">
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Complete
+                    Address</span>
+                  <span id="summaryFullAddress" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 2: Academic Program Details -->
+            <div class="bg-white rounded-2xl p-5 border border-indigo-50 shadow-sm space-y-4">
+              <h4
+                class="text-sm font-bold text-indigo-600 uppercase tracking-wider border-b border-indigo-50 pb-2 mb-3">
+                <i class="fas fa-graduation-cap mr-2"></i>Academic Program & Schooling
+              </h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Academic
+                    Level</span>
+                  <span id="summaryAcademicLevel" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Selected
+                    Strand/Grade</span>
+                  <span id="summarySelectedStrand"
+                    class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">LRN</span>
+                  <span id="summaryLrn" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Voucher
+                    Status</span>
+                  <span id="summaryVoucherStatus" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div class="col-span-2">
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Previous
+                    Schooling</span>
+                  <span id="summaryPrevSchooling" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 3: Parent & Family Contact -->
+            <div class="bg-white rounded-2xl p-5 border border-indigo-50 shadow-sm space-y-4 col-span-1 md:col-span-2">
+              <h4
+                class="text-sm font-bold text-indigo-600 uppercase tracking-wider border-b border-indigo-50 pb-2 mb-3">
+                <i class="fas fa-users mr-2"></i>Family & Emergency Contacts
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Father's
+                    Details</span>
+                  <span id="summaryFatherInfo" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Mother's
+                    Details</span>
+                  <span id="summaryMotherInfo" class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+                <div>
+                  <span class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Guardian's
+                    Details (Primary)</span>
+                  <span id="summaryPrimaryContact"
+                    class="block font-semibold text-gray-800 text-sm break-words">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 4: Document Submissions -->
+            <div class="bg-white rounded-2xl p-5 border border-indigo-50 shadow-sm space-y-4 col-span-1 md:col-span-2">
+              <h4
+                class="text-sm font-bold text-indigo-600 uppercase tracking-wider border-b border-indigo-50 pb-2 mb-3">
+                <i class="fas fa-folder-open mr-2"></i>Document Attachments Status
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50/30 rounded-xl border border-indigo-100">
+                  <div
+                    class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div>
+                    <span class="block text-xs text-gray-400 font-bold uppercase tracking-wider">PSA Birth
+                      Certificate</span>
+                    <span id="summaryDocBirthCert" class="block text-sm font-semibold text-gray-700 break-all">—</span>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50/30 rounded-xl border border-indigo-100">
+                  <div
+                    class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div>
+                    <span class="block text-xs text-gray-400 font-bold uppercase tracking-wider">Form 138 / Report
+                      Card</span>
+                    <span id="summaryDocReportCard" class="block text-sm font-semibold text-gray-700 break-all">—</span>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3 p-3 bg-indigo-50/30 rounded-xl border border-indigo-100">
+                  <div
+                    class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div>
+                    <span class="block text-xs text-gray-400 font-bold uppercase tracking-wider">Certificate of Good
+                      Moral</span>
+                    <span id="summaryDocGoodMoral" class="block text-sm font-semibold text-gray-700 break-all">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mt-6 p-4 bg-indigo-600/5 border border-indigo-50 rounded-2xl text-xs text-gray-500 flex items-start space-x-2.5">
+            <i class="fas fa-info-circle text-[#007dfe] text-sm mt-0.5"></i>
+            <span>Please carefully review all of the information above before submitting. If everything is accurate,
+              check the Data Privacy Policy and click "Submit Application".</span>
+          </div>
+        </div>
+
+        <!-- Data Privacy Policy -->
+        <div class="border-b pb-4 mb-6">
+          <label class="flex items-start">
+            <input type="checkbox" id="modalDataPrivacy" required class="mr-3 mt-1" />
+            <span class="text-gray-700 text-sm">
+              I have read and agree to the <a href="#" onclick="showDataPrivacyModal(event)"
+                class="text-blue-600 hover:underline font-semibold">Data Privacy Policy</a>. I understand that my
+              personal information will be collected and processed in accordance with the Data Privacy Act of 2012.
+            </span>
+          </label>
+        </div>
+
+        <!-- Bottom Buttons for Step 6 -->
+        <div class="flex justify-between pt-6">
+          <button type="button" onclick="prevStep(6)"
+            class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-300 transition font-medium text-lg flex items-center">
+            <i class="fas fa-arrow-left mr-2 text-sm"></i> Back
+          </button>
+          <button type="submit"
+            class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition font-medium text-lg flex items-center shadow-lg">
+            Submit Application <i class="fas fa-check ml-2 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-[#004b87] text-white py-12 mt-8">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-3 mb-4">
+            <img src="img/new-logo.png" alt="Academy of Biringan Logo" class="h-10 w-auto" />
+            <span class="text-white font-bold text-xl">Academy of Biringan</span>
+          </div>
+          <p class="text-gray-300 mb-4">
+            Excellence in Education Since 2026
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-300 hover:text-white transition"><i class="fab fa-facebook text-2xl"></i></a>
+            <a href="#" class="text-gray-300 hover:text-white transition"><i class="fab fa-twitter text-2xl"></i></a>
+            <a href="#" class="text-gray-300 hover:text-white transition"><i class="fab fa-instagram text-2xl"></i></a>
+            <a href="#" class="text-gray-300 hover:text-white transition"><i class="fab fa-linkedin text-2xl"></i></a>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+          <ul class="space-y-2">
+            <li>
+              <a href="#" onclick="window.location.href='index.html'"
+                class="text-gray-300 hover:text-white transition">About Us</a>
+            </li>
+            <li>
+              <a href="#" onclick="window.location.href='index.html?tab=news'"
+                class="text-gray-300 hover:text-white transition">News</a>
+            </li>
+            <li>
+              <a href="#" onclick="window.location.href='index.html?tab=programs'"
+                class="text-gray-300 hover:text-white transition">Strands</a>
+            </li>
+            <li>
+              <a href="#" onclick="window.location.href='index.html?faq=true'"
+                class="text-gray-300 hover:text-white transition">FAQ</a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold mb-4">Contact Info</h3>
+          <ul class="space-y-2">
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-map-marker-alt"></i>
+              <span class="text-gray-300">10010101 Academy of Biringan Ave, City</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-phone"></i>
+              <span class="text-gray-300">+8700</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-envelope"></i>
+              <span class="text-gray-300">info@academyofbiringan.edu</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold mb-4">Legal</h3>
+          <ul class="space-y-2">
+            <li>
+              <a href="#" onclick="
+                    showPrivacyModal();
+                    return false;
+                  " class="text-gray-300 hover:text-white transition">Privacy Policy</a>
+            </li>
+            <li>
+              <a href="#" onclick="
+                    showTermsModal();
+                    return false;
+                  " class="text-gray-300 hover:text-white transition">Terms of Service</a>
+            </li>
+            <li>
+              <a href="#" onclick="
+                    showCookieModal();
+                    return false;
+                  " class="text-gray-300 hover:text-white transition">Cookie Policy</a>
+            </li>
+            <li>
+              <a href="#" onclick="
+                    showAccessibilityModal();
+                    return false;
+                  " class="text-gray-300 hover:text-white transition">Accessibility</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-600 mt-8 pt-8 text-center">
+        <p class="text-gray-300">
+          &copy; 2026 Academy of Biringan. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Privacy Policy Modal -->
+  <div id="privacyModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div
+      class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+      id="privacyModalContent">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Privacy Policy</h2>
+        <button onclick="hidePrivacyModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="space-y-4 max-h-96 overflow-y-auto">
+        <h3 class="font-bold text-gray-800">1. Information We Collect</h3>
+        <p class="text-gray-600">
+          We collect personal information including name, email, phone number,
+          date of birth, and address for enrollment purposes. We also collect
+          academic records and documents submitted during the application
+          process.
+        </p>
+
+        <h3 class="font-bold text-gray-800">
+          2. How We Use Your Information
+        </h3>
+        <p class="text-gray-600">
+          Your information is used to process applications, communicate about
+          enrollment status, provide academic services, and improve our
+          educational programs. We do not sell your personal data to third
+          parties.
+        </p>
+
+        <h3 class="font-bold text-gray-800">3. Data Security</h3>
+        <p class="text-gray-600">
+          We implement appropriate security measures to protect your personal
+          information from unauthorized access, alteration, or disclosure. All
+          data is encrypted and stored securely.
+        </p>
+
+        <h3 class="font-bold text-gray-800">4. Your Rights</h3>
+        <p class="text-gray-600">
+          You have the right to access, correct, or delete your personal
+          information. You may also opt-out of marketing communications at any
+          time.
+        </p>
+
+        <h3 class="font-bold text-gray-800">5. Contact Us</h3>
+        <p class="text-gray-600">
+          For privacy-related inquiries, please contact privacy@academyofbiringan.edu
+        </p>
+      </div>
+      <button onclick="hidePrivacyModal()"
+        class="w-full mt-6 bg-[#007dfe] text-white py-3 rounded-lg hover:bg-[#004b87] transition">
+        I Understand
+      </button>
+    </div>
+  </div>
+
+  <!-- Terms of Service Modal -->
+  <div id="termsModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div
+      class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+      id="termsModalContent">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Terms of Service</h2>
+        <button onclick="hideTermsModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="space-y-4 max-h-96 overflow-y-auto">
+        <h3 class="font-bold text-gray-800">1. Acceptance of Terms</h3>
+        <p class="text-gray-600">
+          By accessing and using our enrollment system, you agree to be bound
+          by these Terms of Service. If you do not agree to these terms,
+          please do not use our services.
+        </p>
+
+        <h3 class="font-bold text-gray-800">2. Enrollment Requirements</h3>
+        <p class="text-gray-600">
+          Students must meet all admission requirements and provide accurate
+          information. False information may result in rejection of
+          application or dismissal from the Academy of Biringan.
+        </p>
+
+        <h3 class="font-bold text-gray-800">3. Academic Integrity</h3>
+        <p class="text-gray-600">
+          All students must maintain academic honesty. Cheating, plagiarism,
+          or any form of academic dishonesty will result in disciplinary
+          action.
+        </p>
+
+        <h3 class="font-bold text-gray-800">4. Payment Obligations</h3>
+        <p class="text-gray-600">
+          Students are responsible for timely payment of tuition and fees.
+          Late payments may incur penalties and affect enrollment status.
+        </p>
+
+        <h3 class="font-bold text-gray-800">5. Code of Conduct</h3>
+        <p class="text-gray-600">
+          All students must adhere to the Academy of Biringan's code of conduct both on
+          and off academy. Violations may result in disciplinary action.
+        </p>
+      </div>
+      <button onclick="hideTermsModal()"
+        class="w-full mt-6 bg-[#007dfe] text-white py-3 rounded-lg hover:bg-[#004b87] transition">
+        I Accept
+      </button>
+    </div>
+  </div>
+
+  <!-- Cookie Policy Modal -->
+  <div id="cookieModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div
+      class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+      id="cookieModalContent">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Cookie Policy</h2>
+        <button onclick="hideCookieModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="space-y-4 max-h-96 overflow-y-auto">
+        <h3 class="font-bold text-gray-800">1. What Are Cookies</h3>
+        <p class="text-gray-600">
+          Cookies are small text files stored on your device that help us
+          provide better user experience, analyze site usage, and assist in
+          our marketing efforts.
+        </p>
+
+        <h3 class="font-bold text-gray-800">2. Types of Cookies We Use</h3>
+        <p class="text-gray-600">
+          We use essential cookies for site functionality, analytical cookies
+          to understand user behavior, and marketing cookies to personalize
+          your experience.
+        </p>
+
+        <h3 class="font-bold text-gray-800">3. Managing Cookies</h3>
+        <p class="text-gray-600">
+          You can control and manage cookies through your browser settings.
+          However, disabling essential cookies may affect site functionality.
+        </p>
+
+        <h3 class="font-bold text-gray-800">4. Third-Party Cookies</h3>
+        <p class="text-gray-600">
+          We may use third-party services that set cookies on your behalf.
+          These include analytics tools and social media integrations.
+        </p>
+      </div>
+      <button onclick="hideCookieModal()"
+        class="w-full mt-6 bg-[#007dfe] text-white py-3 rounded-lg hover:bg-[#004b87] transition">
+        I Understand
+      </button>
+    </div>
+  </div>
+
+  <!-- Accessibility Modal -->
+  <div id="accessibilityModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div
+      class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+      id="accessibilityModalContent">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">
+          Accessibility Statement
+        </h2>
+        <button onclick="hideAccessibilityModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="space-y-4 max-h-96 overflow-y-auto">
+        <h3 class="font-bold text-gray-800">1. Our Commitment</h3>
+        <p class="text-gray-600">
+          We are committed to ensuring digital accessibility for people with
+          disabilities. We continually improve the user experience for
+          everyone and apply relevant accessibility standards.
+        </p>
+
+        <h3 class="font-bold text-gray-800">2. Accessibility Features</h3>
+        <p class="text-gray-600">
+          Our site includes features such as keyboard navigation, screen
+          reader compatibility, color contrast compliance, and resizable text
+          to accommodate users with different needs.
+        </p>
+
+        <h3 class="font-bold text-gray-800">3. Technical Standards</h3>
+        <p class="text-gray-600">
+          We strive to follow WCAG 2.1 Level AA guidelines to ensure our
+          content is accessible to all users regardless of their abilities.
+        </p>
+
+        <h3 class="font-bold text-gray-800">4. Feedback</h3>
+        <p class="text-gray-600">
+          If you encounter any accessibility issues or have suggestions for
+          improvement, please contact accessibility@academyofbiringan.edu
+        </p>
+      </div>
+      <button onclick="hideAccessibilityModal()"
+        class="w-full mt-6 bg-[#007dfe] text-white py-3 rounded-lg hover:bg-[#004b87] transition">
+        I Understand
+      </button>
+    </div>
+  </div>
+
+  <!-- FAQ Modal -->
+  <div id="faqModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div
+      class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+      id="faqModalContent">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">
+          Frequently Asked Questions
+        </h2>
+        <button onclick="hideFAQModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="space-y-4 max-h-96 overflow-y-auto">
+        <div class="bg-gray-50 rounded-xl overflow-hidden">
+          <button class="w-full p-4 text-left flex justify-between items-center" onclick="toggleFAQModalItem(this)">
+            <span class="font-semibold text-gray-800">What are the admission requirements?</span>
+            <i class="fas fa-chevron-down text-[#007dfe] transition-transform"></i>
+          </button>
+          <div class="hidden px-4 pb-4 text-gray-600">
+            To be admitted, you need a high school diploma or equivalent,
+            minimum GPA of 2.5, and completion of prerequisite courses.
+            International students must provide English proficiency test
+            scores.
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-xl overflow-hidden">
+          <button class="w-full p-4 text-left flex justify-between items-center" onclick="toggleFAQModalItem(this)">
+            <span class="font-semibold text-gray-800">How do I apply for scholarships?</span>
+            <i class="fas fa-chevron-down text-[#007dfe] transition-transform"></i>
+          </button>
+          <div class="hidden px-4 pb-4 text-gray-600">
+            Scholarship applications are available through the student portal.
+            You can apply for merit-based, need-based, and program-specific
+            scholarships. Deadlines vary by scholarship type.
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-xl overflow-hidden">
+          <button class="w-full p-4 text-left flex justify-between items-center" onclick="toggleFAQModalItem(this)">
+            <span class="font-semibold text-gray-800">What payment methods are accepted?</span>
+            <i class="fas fa-chevron-down text-[#007dfe] transition-transform"></i>
+          </button>
+          <div class="hidden px-4 pb-4 text-gray-600">
+            We accept credit cards (Visa, Mastercard), bank transfers, and
+            e-wallets (GoPay, OVO, Dana). You can also pay in person at the
+            Finance Office using cash or debit cards.
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-xl overflow-hidden">
+          <button class="w-full p-4 text-left flex justify-between items-center" onclick="toggleFAQModalItem(this)">
+            <span class="font-semibold text-gray-800">Can I transfer credits from another institution?</span>
+            <i class="fas fa-chevron-down text-[#007dfe] transition-transform"></i>
+          </button>
+          <div class="hidden px-4 pb-4 text-gray-600">
+            Yes, we accept transfer credits from accredited institutions.
+            Credits are evaluated on a case-by-case basis. Submit your
+            official transcripts for evaluation during the application
+            process.
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-xl overflow-hidden">
+          <button class="w-full p-4 text-left flex justify-between items-center" onclick="toggleFAQModalItem(this)">
+            <span class="font-semibold text-gray-800">What is the deadline for enrollment?</span>
+            <i class="fas fa-chevron-down text-[#007dfe] transition-transform"></i>
+          </button>
+          <div class="hidden px-4 pb-4 text-gray-600">
+            The enrollment deadline for Fall semester is August 15th, and for
+            Spring semester is January 15th. Late applications may be
+            considered on a space-available basis with additional fees.
+          </div>
+        </div>
+      </div>
+      <button onclick="hideFAQModal()"
+        class="w-full mt-6 bg-[#007dfe] text-white py-3 rounded-lg hover:bg-[#004b87] transition">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Step Summary Confirmation Modal -->
+  <div id="stepSummaryModal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div
+      class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0"
+      id="stepSummaryModalContent">
+      <div class="flex items-center space-x-3 mb-4 text-indigo-600">
+        <i class="fas fa-info-circle text-3xl"></i>
+        <h2 class="text-2xl font-bold text-gray-800" id="stepSummaryTitle">Information Summary</h2>
+      </div>
+
+      <p class="text-sm text-gray-500 mb-6">Please review the details you entered before proceeding to the next section.
+      </p>
+
+      <!-- Summary Grid -->
+      <div
+        class="grid grid-cols-2 gap-3 bg-indigo-50 rounded-xl p-4 border border-indigo-100 max-h-96 overflow-y-auto text-sm"
+        id="stepSummaryFields">
+        <!-- Populated dynamically via JS -->
+      </div>
+
+      <div class="flex justify-end space-x-3 mt-6">
+        <button onclick="hideStepSummaryModal()"
+          class="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-200 transition font-medium">
+          Back
+        </button>
+        <button id="stepSummaryProceedBtn"
+          class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition font-medium flex items-center">
+          Proceed <i class="fas fa-arrow-right ml-2 text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dark Mode Toggle -->
+  <button id="darkModeToggle" onclick="toggleDarkMode()"
+    class="fixed bottom-20 left-6 z-50 bg-gray-800 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-gray-900 transition">
+    <i class="fas fa-moon text-xl"></i>
+  </button>
+
+  <!-- Toast Notification -->
+  <div id="toast"
+    class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg translate-y-20 opacity-0 transition-all duration-300 z-50 text-center">
+    <span id="toastMessage"></span>
+  </div>
+
+  <script src="javascript/app.js?v=3"></script>
+</body>
+
+</html>

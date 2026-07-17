@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Portal - Enrollment System</title>
+    <script>
+      (function() {
+        const isDark = localStorage.getItem('darkMode') === 'enabled';
+        if (isDark) {
+          document.documentElement.classList.add('dark-mode');
+        }
+      })();
+    </script>
+    <script src="javascript/tailwind.js"></script>
+    <link rel="stylesheet" href="css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      body { font-family: 'Plus Jakarta Sans', sans-serif; }
+      .bg-slate-gray { background-color: #2C3E50; }
+      .text-slate-gray { color: #2C3E50; }
+      .border-slate-gray { border-color: #2C3E50; }
+
+      /* Dark Mode Specific Overrides for Student Portal */
+      .dark-mode {
+        --bg-main: #0f172a;
+        --bg-card: #1e293b;
+        --border-color: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+      }
+      
+      .dark-mode body {
+        background-color: var(--bg-main) !important;
+        color: var(--text-primary) !important;
+      }
+      
+      .dark-mode header,
+      .dark-mode .bg-white {
+        background-color: var(--bg-card) !important;
+        border-color: var(--border-color) !important;
+      }
+
+      /* Fix search bar and input backgrounds in dark mode */
+      .dark-mode input,
+      .dark-mode select,
+      .dark-mode textarea {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #ffffff !important;
+      }
+      
+      /* Welcome banner outer card background in dark mode */
+      .dark-mode .welcome-banner-container {
+        background-image: linear-gradient(to bottom right, #1e293b, #0f172a, #1e1b4b) !important;
+        border-color: #334155 !important;
+      }
+
+      /* Glassmorphic welcome banner in dark mode */
+      .dark-mode .backdrop-blur-lg.bg-white\/40 {
+        background-color: rgba(30, 41, 59, 0.4) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+      }
+      .dark-mode #welcomeHeader {
+        color: #ffffff !important;
+      }
+      .dark-mode #welcomeHeader + p {
+        color: #cbd5e1 !important;
+      }
+      
+      /* Header & text color fixes */
+      .dark-mode #studentNavName,
+      .dark-mode h3,
+      .dark-mode h4,
+      .dark-mode h5 {
+        color: var(--text-primary) !important;
+      }
+      
+      /* Billing Ledger container and text */
+      .dark-mode #dashboardBillingLedger {
+        background-color: rgba(15, 23, 42, 0.6) !important;
+        border-color: var(--border-color) !important;
+      }
+      .dark-mode #dashboardBillingLedger span {
+        color: #cbd5e1 !important;
+      }
+      .dark-mode #dashboardBillingLedger .font-medium {
+        color: #ffffff !important;
+      }
+      
+      /* Table styling in dark mode */
+      .dark-mode tr.border-b {
+        border-color: var(--border-color) !important;
+      }
+      .dark-mode tr:hover {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+      }
+      .dark-mode tr.bg-white {
+        background-color: var(--bg-card) !important;
+      }
+      .dark-mode td {
+        color: #cbd5e1 !important;
+      }
+      .dark-mode th {
+        color: var(--text-secondary) !important;
+        background-color: rgba(15, 23, 42, 0.4) !important;
+      }
+      
+      /* Upcoming classes rows in dark mode */
+      .dark-mode #upcomingClassesList .border-slate-100 {
+        border-color: var(--border-color) !important;
+      }
+      .dark-mode #upcomingClassesList .hover\:bg-\[\#f8fafc\]:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+      }
+      
+      /* Weekly Timetable Columns in dark mode */
+      .dark-mode #scheduleContainer > div {
+        background-color: rgba(30, 41, 59, 0.2) !important;
+        border-color: var(--border-color) !important;
+      }
+      .dark-mode #scheduleContainer h4 {
+        border-color: var(--border-color) !important;
+        color: #ffffff !important;
+      }
+
+      /* Collapsible Sidenav Styles */
+      aside {
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      
+      aside.collapsed {
+        width: 76px !important;
+      }
+      
+      /* Hide branding details when collapsed */
+      aside.collapsed .brand-container {
+        justify-content: center !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+      
+      aside.collapsed .brand-container > div:first-child {
+        display: none !important;
+      }
+      
+      /* Hide navigation text labels when collapsed */
+      aside.collapsed nav span,
+      aside.collapsed .footer-nav span {
+        display: none !important;
+      }
+      
+      /* Center menu icons when collapsed */
+      aside.collapsed nav button,
+      aside.collapsed .footer-nav button {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        width: 44px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      
+      /* Scale items slightly inside collapsed nav */
+      aside.collapsed nav i,
+      aside.collapsed .footer-nav i {
+        font-size: 1.1rem !important;
+      }
+
+      /* Layout Gap & Sidebar Fixes */
+      main {
+        padding-left: 0 !important;
+      }
+      html.swal2-height-auto, body.swal2-height-auto {
+        height: 100vh !important;
+      }
+
+      /* Light Mode Contrast Improvements */
+      .text-slate-400 { color: #64748b !important; }
+      .text-slate-500 { color: #475569 !important; }
+      .text-slate-600 { color: #334155 !important; }
+      .text-gray-400 { color: #6b7280 !important; }
+      .text-gray-500 { color: #4b5563 !important; }
+
+      /* Dark Mode Contrast Improvements */
+      .dark-mode .text-slate-400 { color: #cbd5e1 !important; }
+      .dark-mode .text-slate-500 { color: #cbd5e1 !important; }
+      .dark-mode .text-slate-600 { color: #f1f5f9 !important; }
+      .dark-mode .text-gray-400 { color: #cbd5e1 !important; }
+      .dark-mode .text-gray-500 { color: #cbd5e1 !important; }
+      .dark-mode .text-slate-300 { color: #f1f5f9 !important; }
+
+      /* SweetAlert2 Styling & Contrast Enhancements */
+      .swal2-popup {
+          font-family: 'Plus Jakarta Sans', sans-serif !important;
+          border-radius: 1rem !important;
+          padding: 2rem !important;
+      }
+      .swal2-title {
+          color: #1e293b !important;
+          font-weight: 700 !important;
+      }
+      .swal2-html-container {
+          color: #475569 !important; /* Slate-600 for high visibility in light mode */
+          font-size: 0.95rem !important;
+          font-weight: 500 !important;
+          line-height: 1.5 !important;
+      }
+      .swal2-confirm {
+          background-color: #3b82f6 !important;
+          border-radius: 0.5rem !important;
+          font-size: 0.875rem !important;
+          font-weight: 600 !important;
+          padding: 0.625rem 1.25rem !important;
+      }
+      .swal2-cancel {
+          background-color: #6b7280 !important;
+          border-radius: 0.5rem !important;
+          font-size: 0.875rem !important;
+          font-weight: 600 !important;
+          padding: 0.625rem 1.25rem !important;
+      }
+
+      /* Dark Mode SweetAlert2 Overrides */
+      .dark-mode .swal2-popup {
+          background-color: #1e293b !important;
+          border: 1px solid #334155 !important;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+      }
+      .dark-mode .swal2-title {
+          color: #ffffff !important;
+      }
+      .dark-mode .swal2-html-container {
+          color: #cbd5e1 !important; /* Bright text for high contrast in dark mode */
+      }
+    </style>
+  </head>
+  <body class="bg-[#f5f8fb] text-[#2c3e50] flex h-screen overflow-hidden">
+
+    <!-- ─── SIDEBAR NAVIGATION ─── -->
+    <aside id="sidebarAside" class="w-64 bg-slate-gray text-slate-300 flex flex-col shrink-0 h-screen sticky top-0 shadow-2xl z-20 transition-all duration-300">
+      <!-- Sidebar Header -->
+      <div class="brand-container px-6 py-6 flex items-center justify-between border-b border-slate-700/30">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 shrink-0">
+            <i class="fas fa-graduation-cap text-white text-base"></i>
+          </div>
+          <div class="brand-details">
+            <h1 class="font-bold text-white text-base tracking-wide leading-tight">Academix</h1>
+            <span class="text-[9px] font-semibold text-blue-300 uppercase tracking-widest block mt-0.5">JJKings Academy</span>
+          </div>
+        </div>
+        
+        <!-- Toggle Button (hamburger menu) -->
+        <button onclick="toggleSidebar()" class="p-1.5 rounded hover:bg-slate-700/50 text-slate-300 transition-colors" title="Toggle Sidebar">
+          <i class="fas fa-bars text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        <button onclick="switchTab('overviewTab', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition bg-white/10 text-white shadow-md active-tab">
+          <i class="fas fa-th-large text-base"></i> <span>Dashboard</span>
+        </button>
+        <button onclick="switchTab('paymentTab', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:text-white hover:bg-white/5">
+          <i class="fas fa-receipt text-base"></i> <span>Fees</span>
+        </button>
+        <button onclick="switchTab('gradesTab', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:text-white hover:bg-white/5">
+          <i class="fas fa-chart-line text-base"></i> <span>Grades</span>
+        </button>
+        <button onclick="switchTab('scheduleTab', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:text-white hover:bg-white/5">
+          <i class="fas fa-calendar-alt text-base"></i> <span>Schedule</span>
+        </button>
+        <button onclick="switchTab('calendarTab', this)" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:text-white hover:bg-white/5" title="Academic Calendar">
+          <i class="fas fa-calendar text-base"></i> <span>Calendar</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="p-4 border-t border-slate-700/30 bg-black/10 flex flex-col gap-2 footer-nav">
+        <button onclick="showChangePasswordModal()" class="w-full bg-white/5 hover:bg-white/10 hover:text-white text-slate-200 py-2.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2">
+          <i class="fas fa-key text-[10px]"></i> <span>Change Password</span>
+        </button>
+        <button onclick="logoutStudent()" class="w-full bg-red-900/10 hover:bg-red-900/20 text-red-300 py-2.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2">
+          <i class="fas fa-sign-out-alt text-[10px]"></i> <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ─── MAIN CONTENT CONTAINER ─── -->
+    <main class="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+
+      <!-- Header Topbar -->
+      <header class="bg-white border-b border-slate-100 px-8 py-4 flex items-center justify-end shadow-sm flex-shrink-0 z-30">
+        
+        
+        <div class="flex items-center gap-6">
+          <!-- Notification Dropdown Wrapper -->
+          <div class="relative">
+            <button onclick="toggleNotificationsDropdown(event)" class="relative p-1.5 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center" title="Notifications">
+              <i class="far fa-bell text-lg"></i>
+              <span id="notifBadge" class="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+            </button>
+            
+            <!-- Notifications Dropdown Menu -->
+            <div id="notificationsDropdown" class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl py-3 hidden z-50 transition-all duration-200">
+              <div class="px-4 pb-2 border-b border-slate-50 dark:border-slate-700/50 flex justify-between items-center">
+                <span class="font-extrabold text-xs text-slate-800 dark:text-white">Notifications</span>
+                <button onclick="clearNotifications()" class="text-[10px] text-blue-500 hover:text-blue-600 font-bold">Mark all read</button>
+              </div>
+              <div class="max-h-64 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-700/30 text-left" id="notificationsList">
+                <!-- Javascript populated -->
+              </div>
+            </div>
+          </div>
+
+          
+          <!-- Dark Mode Toggle -->
+          <button id="darkModeToggle" onclick="toggleDarkMode()" title="Toggle dark mode"
+            class="p-1.5 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center">
+            <i id="darkModeIcon" class="far fa-moon text-lg"></i>
+          </button>
+          
+          <div class="w-px h-6 bg-slate-200"></div>
+
+          <!-- Semester Selector Wrapper -->
+          <div id="semesterSelectorWrapper" class="flex items-center gap-2">
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Semester</span>
+            <select id="semesterSelector" onchange="changeSemester(this.value)" 
+              class="text-xs font-bold px-3 py-1.5 border border-slate-200 rounded-xl bg-white outline-none text-slate-700 hover:border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200 shadow-sm cursor-pointer">
+              <option value="1">1st Semester</option>
+              <option value="2">2nd Semester</option>
+            </select>
+          </div>
+
+          <div id="semesterDivider" class="w-px h-6 bg-slate-200"></div>
+
+          <!-- Profile Badge -->
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <span id="studentNavName" class="block text-xs font-bold text-slate-800 truncate max-w-[150px]">—</span>
+              <span id="studentNavSub" class="block text-[10px] font-semibold text-slate-400">Active Student</span>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shadow-inner">
+              <i class="fas fa-user-graduate"></i>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Tab Content Container -->
+      <div class="flex-grow overflow-y-auto px-8 py-6">
+
+        <!-- ─── TAB 1: OVERVIEW ─── -->
+        <div id="overviewTab" class="tab-pane space-y-6">
+          
+          <!-- Welcome Banner Card -->
+          <div class="welcome-banner-container relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#ebf5ff] via-[#f3f0ff] to-[#fffbeb] p-8 border border-white/40 shadow-sm">
+            <!-- Floating Abstract Blobs for Glassmorphic Glow -->
+            <div class="absolute -left-10 -top-10 w-44 h-44 rounded-full bg-blue-400/20 blur-3xl animate-pulse"></div>
+            <div class="absolute -right-10 -bottom-10 w-48 h-48 rounded-full bg-indigo-400/20 blur-3xl"></div>
+            <div class="absolute left-1/3 top-1/4 w-32 h-32 rounded-full bg-amber-300/10 blur-2xl"></div>
+            
+            <!-- Glassmorphic Panel -->
+            <div class="relative z-10 backdrop-blur-lg bg-white/40 border border-white/60 rounded-2xl p-6 max-w-3xl mx-auto shadow-sm text-center">
+              <h3 class="text-2xl font-extrabold text-slate-800" id="welcomeHeader">Welcome back, Student!</h3>
+              <p class="text-slate-600 text-sm mt-2 leading-relaxed">You are successfully enrolled. Select from the options below to review class schedules, verify outstanding fees, or view quarterly report cards.</p>
+            </div>
+          </div>
+
+          <!-- Vibrant Stat Cards Grid (4 columns) -->
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Academic Level Card -->
+            <div class="bg-gradient-to-tr from-[#3b82f6] to-[#4f46e5] text-white rounded-2xl p-5 shadow-lg shadow-blue-500/10 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between min-h-[150px] border border-blue-500/20">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Academic Level</span>
+                <i class="fas fa-trophy text-xs text-blue-200"></i>
+              </div>
+              <div class="mt-4">
+                <p class="text-lg font-bold text-white leading-tight" id="dashboardLevel">—</p>
+                <p class="text-blue-100 text-xs mt-0.5 truncate" id="dashboardStrand">—</p>
+              </div>
+              <div class="mt-3">
+                <div class="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-white h-full rounded-full" style="width: 75%"></div>
+                </div>
+                <span class="text-[9px] text-blue-200 block mt-1">Active Enrollment</span>
+              </div>
+            </div>
+            
+            <!-- Voucher Status Card -->
+            <div id="voucherCardContainer" class="bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] text-white rounded-2xl p-5 shadow-lg shadow-indigo-500/10 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between min-h-[150px] border border-indigo-500/20">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">Voucher Status</span>
+                <i class="fas fa-check-circle text-xs text-indigo-200"></i>
+              </div>
+              <div class="mt-4">
+                <p class="text-lg font-bold text-white leading-tight" id="dashboardVoucherStatus">—</p>
+                <p class="text-indigo-100 text-xs mt-0.5 truncate" id="dashboardVoucherType">—</p>
+              </div>
+              <div class="mt-3">
+                <div class="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-white h-full rounded-full" style="width: 100%"></div>
+                </div>
+                <span class="text-[9px] text-indigo-200 block mt-1">Verification Status</span>
+              </div>
+            </div>
+            
+            <!-- Outstanding Fees Card -->
+            <div class="bg-gradient-to-tr from-[#10b981] to-[#059669] text-white rounded-2xl p-5 shadow-lg shadow-emerald-500/10 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between min-h-[150px] border border-emerald-500/20">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-emerald-100 uppercase tracking-widest">Outstanding Fee</span>
+                <i class="fas fa-credit-card text-xs text-emerald-200"></i>
+              </div>
+              <div class="mt-4">
+                <p class="text-xl font-black text-white" id="dashboardPaymentStatus">—</p>
+                <p class="text-emerald-100 text-xs mt-0.5">Total Billing Balance</p>
+              </div>
+              <div class="mt-2.5">
+                <button onclick="switchTab('paymentTab', document.querySelector('nav button:nth-child(2)'))" 
+                  class="w-full bg-white text-emerald-700 hover:bg-emerald-50 text-[10px] font-bold py-1.5 rounded-lg transition text-center">
+                  Pay Now
+                </button>
+              </div>
+            </div>
+            
+            <!-- Upcoming Events Card -->
+            <div class="bg-gradient-to-tr from-[#f59e0b] to-[#d97706] text-white rounded-2xl p-5 shadow-lg shadow-amber-500/10 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between min-h-[150px] border border-amber-500/20">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-amber-100 uppercase tracking-widest">Upcoming Classes</span>
+                <i class="fas fa-bell text-xs text-amber-200"></i>
+              </div>
+              <div class="mt-4">
+                <p class="text-lg font-bold text-white leading-tight truncate" id="nextClassSubject">Oral Comm</p>
+                <p class="text-amber-100 text-xs mt-0.5 truncate" id="nextClassTimeRoom">08:00 AM | Room 101</p>
+              </div>
+              <div class="mt-3">
+                <div class="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
+                  <div class="bg-white h-full rounded-full" style="width: 50%"></div>
+                </div>
+                <span class="text-[9px] text-amber-200 block mt-1" id="nextClassCount">Mon-Fri classes</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Grid: Classes & Activities -->
+          <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Upcoming Classes Box -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col">
+              <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                <h4 class="font-bold text-slate-800 text-sm">Upcoming Classes</h4>
+                <button onclick="switchTab('scheduleTab', document.querySelector('nav button:nth-child(4)'))" class="text-xs text-blue-600 hover:text-blue-700 font-semibold">List &gt;</button>
+              </div>
+              <div class="space-y-2.5 flex-1 overflow-y-auto max-h-[280px] pr-1" id="upcomingClassesList">
+                <p class="text-xs text-slate-400 py-6 text-center">Loading classes...</p>
+              </div>
+            </div>
+
+            <!-- Recent Activity Box -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col">
+              <div class="flex items-center justify-between mb-4 flex-shrink-0">
+                <h4 class="font-bold text-slate-800 text-sm">Recent Activity</h4>
+                <button class="text-xs text-slate-400 hover:text-slate-600 font-semibold">View all &gt;</button>
+              </div>
+              <div class="space-y-2.5 flex-1 overflow-y-auto max-h-[280px]">
+                <!-- Item 1 -->
+                <div class="flex items-center justify-between p-3 border border-slate-50 hover:bg-slate-50/50 rounded-xl transition cursor-pointer group">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                      <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                      <h5 class="text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors">Grades Updated</h5>
+                      <p class="text-[10px] text-slate-400 mt-0.5">Quarterly report card is now active</p>
+                    </div>
+                  </div>
+                  <i class="fas fa-chevron-right text-[10px] text-slate-300 group-hover:text-blue-500 transition-colors"></i>
+                </div>
+                <!-- Item 2 -->
+                <div class="flex items-center justify-between p-3 border border-slate-50 hover:bg-slate-50/50 rounded-xl transition cursor-pointer group">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+                      <i class="fas fa-tasks"></i>
+                    </div>
+                    <div>
+                      <h5 class="text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors">Enrollment Complete</h5>
+                      <p class="text-[10px] text-slate-400 mt-0.5">Application files verified and approved</p>
+                    </div>
+                  </div>
+                  <i class="fas fa-chevron-right text-[10px] text-slate-300 group-hover:text-blue-500 transition-colors"></i>
+                </div>
+                <!-- Item 3 -->
+                <div class="flex items-center justify-between p-3 border border-slate-50 hover:bg-slate-50/50 rounded-xl transition cursor-pointer group">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs">
+                      <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div>
+                      <h5 class="text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors">Announcements</h5>
+                      <p class="text-[10px] text-slate-400 mt-0.5">Welcome message posted to students portal</p>
+                    </div>
+                  </div>
+                  <i class="fas fa-chevron-right text-[10px] text-slate-300 group-hover:text-blue-500 transition-colors"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ─── TAB 2: PAYMENT SUMMARY ─── -->
+        <div id="paymentTab" class="tab-pane hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <i class="fas fa-receipt text-blue-500"></i>Tuition & Billing Ledger
+            </h3>
+            <div class="grid md:grid-cols-2 gap-8">
+              <div>
+                <div class="space-y-1 text-sm border border-slate-100 rounded-xl p-4 bg-slate-50/50" id="dashboardBillingLedger">
+                  <!-- Javascript populated -->
+                </div>
+                <button onclick="openPaymentModal()" id="payOnlineBtn" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20">
+                  <i class="fas fa-credit-card"></i> Pay Tuition Online (Simulation)
+                </button>
+              </div>
+              <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4">
+                <h4 class="font-bold text-slate-800 text-sm">Voucher & Subsidy Information</h4>
+                <div class="text-xs text-slate-500 space-y-2">
+                  <p><strong>Eligibility Type:</strong> <span id="dashboardVoucherEligibility">—</span></p>
+                  <p><strong>Verification Status:</strong> <span id="dashboardVoucherVerification">—</span></p>
+                  <hr class="border-slate-200 my-2" />
+                  <p class="leading-relaxed">Government-funded education vouchers cover tuition, registration, and science laboratory access. Uniform costs are computed separately.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <i class="fas fa-history text-blue-500"></i>Payment History
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-100 uppercase tracking-wider text-[10px] text-slate-500">
+                    <th class="px-4 py-3 font-bold">Reference Number</th>
+                    <th class="px-4 py-3 font-bold">Date & Time</th>
+                    <th class="px-4 py-3 font-bold">Card Details</th>
+                    <th class="px-4 py-3 font-bold">Cardholder Name</th>
+                    <th class="px-4 py-3 text-right font-bold">Amount Paid</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentHistoryBody">
+                  <tr class="border-b border-slate-100">
+                    <td class="px-4 py-3 text-center text-slate-400" colspan="5">No payment transactions recorded yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── TAB 3: MY GRADES ─── -->
+        <div id="gradesTab" class="tab-pane hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <i class="fas fa-chart-line text-blue-500"></i>Quarterly Report Card
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-100 uppercase tracking-wider text-[10px] text-slate-500">
+                    <th class="px-4 py-3 font-bold">Subject</th>
+                    <th class="px-4 py-3 text-center font-bold">1st Quarter</th>
+                    <th class="px-4 py-3 text-center font-bold">2nd Quarter</th>
+                    <th class="px-4 py-3 text-center font-bold">3rd Quarter</th>
+                    <th class="px-4 py-3 text-center font-bold">4th Quarter</th>
+                    <th class="px-4 py-3 text-center font-bold">Final Grade</th>
+                    <th class="px-4 py-3 text-center font-bold">Remarks</th>
+                  </tr>
+                </thead>
+                <tbody id="gradesTableBody">
+                  <tr class="border-b border-slate-100">
+                    <td class="px-4 py-3 text-center text-slate-400" colspan="7">No grades available yet</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── TAB 4: MY SCHEDULE ─── -->
+        <div id="scheduleTab" class="tab-pane hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <i class="fas fa-calendar-alt text-blue-500"></i>Weekly Timetable
+            </h3>
+            <div class="grid lg:grid-cols-5 gap-4" id="scheduleContainer">
+              <!-- Monday -->
+              <div class="border border-slate-100 bg-slate-50/50 rounded-xl p-4 transition-all duration-300 hover:shadow-sm">
+                <h4 class="font-extrabold text-slate-700 text-xs text-center border-b border-slate-200 pb-2 mb-3 flex items-center justify-center gap-1.5"><i class="fas fa-calendar-day text-blue-500"></i> Monday</h4>
+                <div id="mondaySchedule" class="space-y-2.5">
+                  <p class="text-xs text-slate-400 text-center py-4">No classes</p>
+                </div>
+              </div>
+              <!-- Tuesday -->
+              <div class="border border-slate-100 bg-slate-50/50 rounded-xl p-4 transition-all duration-300 hover:shadow-sm">
+                <h4 class="font-extrabold text-slate-700 text-xs text-center border-b border-slate-200 pb-2 mb-3 flex items-center justify-center gap-1.5"><i class="fas fa-calendar-day text-indigo-500"></i> Tuesday</h4>
+                <div id="tuesdaySchedule" class="space-y-2.5">
+                  <p class="text-xs text-slate-400 text-center py-4">No classes</p>
+                </div>
+              </div>
+              <!-- Wednesday -->
+              <div class="border border-slate-100 bg-slate-50/50 rounded-xl p-4 transition-all duration-300 hover:shadow-sm">
+                <h4 class="font-extrabold text-slate-700 text-xs text-center border-b border-slate-200 pb-2 mb-3 flex items-center justify-center gap-1.5"><i class="fas fa-calendar-day text-purple-500"></i> Wednesday</h4>
+                <div id="wednesdaySchedule" class="space-y-2.5">
+                  <p class="text-xs text-slate-400 text-center py-4">No classes</p>
+                </div>
+              </div>
+              <!-- Thursday -->
+              <div class="border border-slate-100 bg-slate-50/50 rounded-xl p-4 transition-all duration-300 hover:shadow-sm">
+                <h4 class="font-extrabold text-slate-700 text-xs text-center border-b border-slate-200 pb-2 mb-3 flex items-center justify-center gap-1.5"><i class="fas fa-calendar-day text-amber-500"></i> Thursday</h4>
+                <div id="thursdaySchedule" class="space-y-2.5">
+                  <p class="text-xs text-slate-400 text-center py-4">No classes</p>
+                </div>
+              </div>
+              <!-- Friday -->
+              <div class="border border-slate-100 bg-slate-50/50 rounded-xl p-4 transition-all duration-300 hover:shadow-sm">
+                <h4 class="font-extrabold text-slate-700 text-xs text-center border-b border-slate-200 pb-2 mb-3 flex items-center justify-center gap-1.5"><i class="fas fa-calendar-day text-emerald-500"></i> Friday</h4>
+                <div id="fridaySchedule" class="space-y-2.5">
+                  <p class="text-xs text-slate-400 text-center py-4">No classes</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── TAB 5: ACADEMIC CALENDAR ─── -->
+        <div id="calendarTab" class="tab-pane hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <i class="fas fa-calendar-alt text-blue-500"></i>Academic Calendar
+            </h3>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+              <!-- Calendar Left: Grid -->
+              <div class="lg:col-span-2 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-extrabold text-slate-700 dark:text-white text-sm" id="calendarMonthYear">July 2026</h4>
+                  <div class="flex items-center gap-2">
+                    <button onclick="prevCalendarMonth()" class="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors" title="Previous Month">
+                      <i class="fas fa-chevron-left text-xs"></i>
+                    </button>
+                    <button onclick="nextCalendarMonth()" class="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors" title="Next Month">
+                      <i class="fas fa-chevron-right text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Day Names Grid -->
+                <div class="grid grid-cols-7 gap-2 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <div>Sun</div>
+                  <div>Mon</div>
+                  <div>Tue</div>
+                  <div>Wed</div>
+                  <div>Thu</div>
+                  <div>Fri</div>
+                  <div>Sat</div>
+                </div>
+                
+                <!-- Days Grid -->
+                <div class="grid grid-cols-7 gap-2 text-xs" id="calendarDays">
+                  <!-- JS populated -->
+                </div>
+              </div>
+              
+              <!-- Calendar Right: Event List -->
+              <div class="space-y-4">
+                <h4 class="font-extrabold text-slate-700 dark:text-white text-sm flex items-center gap-2">
+                  <i class="fas fa-calendar-check text-blue-500"></i>Scheduled Events
+                </h4>
+                <div class="space-y-3 overflow-y-auto max-h-[350px] pr-1" id="calendarEventsList">
+                  <!-- JS populated -->
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="changePasswordModalContent">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-key mr-2 text-[#007dfe]"></i>Change Password
+          </h2>
+          <button onclick="hideChangePasswordModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="changePasswordForm" class="space-y-4" onsubmit="submitChangePassword(event)">
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Current Password</label>
+            <div class="relative">
+              <input type="password" id="changeCurrentPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007dfe] focus:border-transparent pr-10 text-sm" placeholder="Enter current password" />
+              <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-500 hover:text-gray-700" onclick="togglePasswordVisibility('changeCurrentPassword', 'currentPasswordIcon')">
+                <i class="fas fa-eye" id="currentPasswordIcon"></i>
+              </span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">New Password</label>
+            <div class="relative">
+              <input type="password" id="changeNewPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007dfe] focus:border-transparent pr-10 text-sm" placeholder="Enter new password (min. 6 characters)" />
+              <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-500 hover:text-gray-700" onclick="togglePasswordVisibility('changeNewPassword', 'newPasswordIcon')">
+                <i class="fas fa-eye" id="newPasswordIcon"></i>
+              </span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Confirm New Password</label>
+            <div class="relative">
+              <input type="password" id="changeConfirmPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007dfe] focus:border-transparent pr-10 text-sm" placeholder="Confirm new password" />
+              <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-500 hover:text-gray-700" onclick="togglePasswordVisibility('changeConfirmPassword', 'confirmPasswordIcon')">
+                <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+              </span>
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-[#007dfe] text-white py-3 rounded-lg hover:bg-[#004b87] transition font-semibold">
+            Update Password
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Script assets -->
+    <script src="javascript/sweetalert2.all.min.js"></script>
+    <script src="javascript/student.js?v=2.0.1"></script>
+    
+    <!-- Tab Switching Script -->
+    <script>
+      function switchTab(tabId, btn) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+        // Show selected tab
+        document.getElementById(tabId).classList.remove('hidden');
+
+        // Reset nav styles
+        document.querySelectorAll('aside nav button').forEach(b => {
+          b.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-slate-300 hover:text-white hover:bg-white/5";
+        });
+        
+        // Highlight active sidebar item
+        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition bg-white/10 text-white shadow-md active-tab";
+
+        // Render calendar if tab matches
+        if (tabId === 'calendarTab' && typeof renderCalendar === 'function') {
+          renderCalendar();
+        }
+      }
+    </script>
+    <!-- Simulated Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="paymentModalContent">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-extrabold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-credit-card text-blue-600"></i>Simulated Card Payment
+          </h2>
+          <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        
+        <form id="paymentForm" onsubmit="submitPayment(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Remaining Balance</label>
+            <div class="text-2xl font-black text-slate-800" id="paymentModalBalance">₱0.00</div>
+          </div>
+          
+          <div>
+            <label for="payAmount" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Payment Amount (₱)</label>
+            <input type="number" id="payAmount" min="1" step="0.01" required
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition-all font-bold text-slate-800" />
+          </div>
+          
+          <div>
+            <label for="payCardholder" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Cardholder Name</label>
+            <input type="text" id="payCardholder" required placeholder="John Doe"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition-all text-slate-800" />
+          </div>
+          
+          <div>
+            <label for="payCardNo" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Card Number</label>
+            <input type="text" id="payCardNo" required maxlength="19" placeholder="4111 2222 3333 4444"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition-all font-mono text-slate-800" />
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="payExpiry" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Expiry Date</label>
+              <input type="text" id="payExpiry" required placeholder="MM/YY" maxlength="5"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition-all text-slate-800" />
+            </div>
+            <div>
+              <label for="payCVV" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">CVV</label>
+              <input type="password" id="payCVV" required maxlength="3" placeholder="123"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition-all text-slate-800" />
+            </div>
+          </div>
+          
+          <button type="submit" 
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-blue-500/20 mt-4 flex items-center justify-center gap-2">
+            Confirm Payment Simulation
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
