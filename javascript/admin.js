@@ -12,17 +12,37 @@ let studentLevelFilter = 'all';   // 'all' | 'junior' | 'senior'
 let currentReviewId    = null;    // DB id of student currently in review modal
 
 // ─── SweetAlert2 Mixin ────────────────────────────────────────
-const Swal = window.Swal.mixin({
+const baseSwal = window.Swal.mixin({
     customClass: {
-        popup:         'rounded-2xl shadow-2xl border border-slate-100',
-        title:         'text-xl font-bold text-slate-800',
-        htmlContainer: 'text-slate-500 text-sm leading-relaxed mt-1',
+        popup:         'rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800',
+        title:         'text-xl font-bold text-slate-800 dark:text-white',
+        htmlContainer: 'text-slate-500 dark:text-slate-300 text-sm leading-relaxed mt-1',
         confirmButton: 'bg-blue-600 text-white px-6 py-2.5 rounded-xl hover:bg-blue-700 transition font-semibold text-sm border-none outline-none mx-1 cursor-pointer',
         cancelButton:  'bg-slate-200 text-slate-700 px-6 py-2.5 rounded-xl hover:bg-slate-300 transition font-semibold text-sm border-none outline-none mx-1 cursor-pointer',
         denyButton:    'bg-red-600 text-white px-6 py-2.5 rounded-xl hover:bg-red-700 transition font-semibold text-sm border-none outline-none mx-1 cursor-pointer',
     },
     buttonsStyling: false,
 });
+
+const Swal = {
+    fire: function(options) {
+        const isDark = document.documentElement.classList.contains('admin-dark');
+        let swalOptions = typeof options === 'string' ? { title: options } : { ...options };
+        
+        if (isDark) {
+            swalOptions.background = '#1e293b'; // slate-800 background
+            swalOptions.color = '#ffffff';
+        } else {
+            swalOptions.background = '#ffffff';
+            swalOptions.color = '#1e293b';
+        }
+        
+        return baseSwal.fire(swalOptions);
+    },
+    showLoading: function() {
+        return baseSwal.showLoading();
+    }
+};
 
 // ─── Utility Helpers ──────────────────────────────────────────
 /** Return value or fallback when null/undefined/empty */
@@ -633,10 +653,16 @@ function renderStudentsTable() {
             </td>
             <td class="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">${fmtDate(s.approved_at || s.created_at)}</td>
             <td class="px-4 py-3">
-                <button onclick="openProfileDrawer(${s.id})"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-xs font-semibold rounded-lg transition">
-                    <i class="fas fa-user text-[10px]"></i> View
-                </button>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="openProfileDrawer(${s.id})"
+                        class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-xs font-semibold rounded-lg transition" title="View Student Profile">
+                        <i class="fas fa-user text-[10px]"></i> View
+                    </button>
+                    <button onclick="openAdminCashierPaymentModal(${s.id})"
+                        class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold rounded-lg transition" title="Record Cashier Payment">
+                        <i class="fas fa-cash-register text-[10px]"></i> Pay
+                    </button>
+                </div>
             </td>
         </tr>`;
     }).join('');
@@ -746,6 +772,13 @@ function populateReviewModal(s) {
             ${infoRow('Occupation', s.guardian_occupation)}
             ${infoRow('Address', s.guardian_address)}
         `)}
+
+        ${sectionCard('fas fa-file-alt', 'Submitted Documents', `
+            ${s.birth_cert_path ? infoRow('Birth Certificate', `<a href="${s.birth_cert_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Birth Certificate</a>`) : infoRow('Birth Certificate', '<span class="text-slate-400">Not Uploaded</span>')}
+            ${s.report_card_path ? infoRow('Report Card', `<a href="${s.report_card_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Report Card</a>`) : infoRow('Report Card', '<span class="text-slate-400">Not Uploaded</span>')}
+            ${s.good_moral_path ? infoRow('Good Moral Certificate', `<a href="${s.good_moral_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Good Moral Cert</a>`) : infoRow('Good Moral Certificate', '<span class="text-slate-400">Not Uploaded</span>')}
+            ${s.voucher_path ? infoRow('Voucher Certificate', `<a href="${s.voucher_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Voucher Certificate</a>`) : ''}
+        `)}
     `;
 
     // Auto-fill action fields
@@ -756,12 +789,68 @@ function populateReviewModal(s) {
     });
     document.getElementById('adminNotes').value = '';
 
+    // Calculate total assessed tuition fee
+    const isSeniorHigh = s.level && s.level.toLowerCase().includes('senior');
+    const voucherType = s.voucher_eligibility || '';
+    let tuition = isSeniorHigh ? 20000 : 12000;
+    let registration = 500;
+    let lab = isSeniorHigh ? 1500 : 500;
+    let library = isSeniorHigh ? 500 : 300;
+    let idFee = 200;
+    let uniform = isSeniorHigh ? 3000 : 0;
+    let subtotal = tuition + registration + lab + library + idFee + uniform;
+    let voucherDeduction = 0;
+    if (isSeniorHigh) {
+        if (voucherType === 'public-school' || voucherType === 'same-school') {
+            voucherDeduction = tuition + registration + lab + library + idFee;
+        } else if (voucherType === 'private-school') {
+            voucherDeduction = 17500;
+        }
+    }
+    const totalToPay = subtotal - voucherDeduction;
+    s._calculatedTotalToPay = totalToPay;
+
+    // Prefill Mandatory Initial Downpayment & Auto OR
+    const defaultInit = Math.min(2000, totalToPay);
+    const amountInput = document.getElementById('initialPaymentAmount');
+    if (amountInput) amountInput.value = defaultInit > 0 ? defaultInit : 1000;
+    generateAutoOR();
+    updateApprovalLiveBalance(totalToPay);
+
     // Hide approve/reject for already-decided students
     const isDecided = s.status === 'approved' || s.status === 'rejected';
     document.getElementById('approveBtn').style.display    = isDecided ? 'none' : '';
     document.getElementById('underReviewBtn').style.display = (s.status === 'under-review') ? 'none' : (isDecided ? 'none' : '');
     document.getElementById('rejectBtn').style.display     = isDecided ? 'none' : '';
 }
+
+function generateAutoOR() {
+    const year = new Date().getFullYear();
+    const rand = Math.floor(100000 + Math.random() * 900000);
+    const orInput = document.getElementById('initialPaymentOR');
+    if (orInput) {
+        orInput.value = `OR-${year}-${rand}`;
+    }
+}
+window.generateAutoOR = generateAutoOR;
+
+function updateApprovalLiveBalance(totalToPayVal) {
+    if (typeof totalToPayVal === 'undefined' && currentReviewId) {
+        const student = allStudents.find(s => s.id == currentReviewId);
+        if (student) {
+            totalToPayVal = student._calculatedTotalToPay;
+        }
+    }
+    const totalAssessed = typeof totalToPayVal === 'number' ? totalToPayVal : 13500;
+    const paidInput = parseFloat(document.getElementById('initialPaymentAmount')?.value) || 0;
+    const remaining = Math.max(0, totalAssessed - paidInput);
+
+    const assessedEl = document.getElementById('approvalTotalAssessed');
+    const remainingEl = document.getElementById('approvalLiveRemaining');
+    if (assessedEl) assessedEl.textContent = `₱${totalAssessed.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (remainingEl) remainingEl.textContent = `₱${remaining.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+}
+window.updateApprovalLiveBalance = updateApprovalLiveBalance;
 
 function closeEnrollmentReviewModal() {
     const modal = document.getElementById('enrollmentReviewModal');
@@ -782,58 +871,76 @@ async function approveEnrollment() {
         return;
     }
 
+    const initAmount  = parseFloat(document.getElementById('initialPaymentAmount')?.value) || 0;
+    const initOR      = document.getElementById('initialPaymentOR')?.value.trim() || '';
+    const initMethod  = document.getElementById('initialPaymentMethod')?.value || 'Cash';
+
+    if (initAmount <= 0) {
+        Swal.fire({ icon: 'warning', title: 'Downpayment Required', text: 'Please enter a valid initial downpayment amount (minimum ₱1.00) to approve enrollment.' });
+        return;
+    }
+
+    if (!initOR) {
+        Swal.fire({ icon: 'warning', title: 'Official Receipt (OR) Required', text: 'Please enter an Official Receipt (OR) # or click "Auto OR" to generate one.' });
+        return;
+    }
+
     const { isConfirmed } = await Swal.fire({
         icon: 'question',
         title: 'Approve Enrollment?',
-        html: `This will create a student portal account with section <strong>${sectionVal}</strong>.`,
+        html: `This will approve the student with section <strong>${sectionVal}</strong>.<br><span class="text-xs text-emerald-700 font-bold">Initial Cash Downpayment: ₱${initAmount.toLocaleString('en-US', {minimumFractionDigits:2})} (OR: ${initOR})</span>`,
         showCancelButton: true,
-        confirmButtonText: 'Yes, Approve',
+        confirmButtonText: 'Yes, Approve & Issue Receipt',
         cancelButtonText: 'Cancel',
+        customClass: {
+            confirmButton: 'bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs',
+            cancelButton: 'bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-xs'
+        }
     });
     if (!isConfirmed) return;
 
-    Swal.fire({ title: 'Processing…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Approving application & logging payment…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     try {
         const res    = await fetch('php/api.php?action=updateStatus', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ studentId: currentReviewId, status: 'approved', email: emailVal, section: sectionVal }),
+            body: JSON.stringify({ 
+                studentId: currentReviewId, 
+                status: 'approved', 
+                email: emailVal, 
+                section: sectionVal,
+                initialPayment: initAmount,
+                initialPaymentOR: initOR,
+                initialPaymentMethod: initMethod
+            }),
         });
         const result = await res.json();
 
         if (result.success) {
-            await Swal.fire({
-                icon: 'success',
-                title: 'Enrollment Approved!',
-                html: `
-                    <div class="text-left bg-slate-50 rounded-xl p-4 mt-2 space-y-2 text-sm border border-slate-200">
-                        <div class="flex justify-between gap-4">
-                            <span class="text-slate-500 flex-shrink-0">Student ID</span>
-                            <span class="font-mono font-bold text-slate-800">${result.studentId}</span>
-                        </div>
-                        <div class="flex justify-between gap-4">
-                            <span class="text-slate-500 flex-shrink-0">Portal Email</span>
-                            <span class="font-medium text-slate-800">${result.email || emailVal}</span>
-                        </div>
-                        <div class="flex justify-between gap-4">
-                            <span class="text-slate-500 flex-shrink-0">Section</span>
-                            <span class="font-mono font-bold text-slate-800">${result.section}</span>
-                        </div>
-                        <div class="flex justify-between gap-4 items-center">
-                            <span class="text-slate-500 flex-shrink-0">Default Password</span>
-                            <span class="font-mono bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-xs font-bold">password123</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-3">Advise the student to change their password on first login.</p>`,
-                confirmButtonText: 'Done',
-            });
+            safeCloseSwal();
+
+            const studentObj = allStudents.find(st => st.id == currentReviewId);
+            const studentName = studentObj ? `${studentObj.first_name} ${studentObj.last_name}` : 'Approved Student';
+            const totalAssessedFee = studentObj ? (studentObj._calculatedTotalToPay || 13500) : 13500;
+            const remaining = Math.max(0, totalAssessedFee - initAmount);
+
             closeEnrollmentReviewModal();
             await Promise.all([loadAllStudents(), loadAllSections()]);
+
+            // Automatically open the Official Receipt Modal for immediate printing!
+            openOfficialReceiptModal({
+                orNumber: initOR,
+                studentName: studentName,
+                studentId: result.studentId || '—',
+                method: initMethod,
+                amountPaid: initAmount,
+                remainingBalance: remaining
+            });
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: result.message || 'Failed to approve enrollment.' });
+            Swal.fire({ icon: 'error', title: 'Approval Failed', text: result.message || 'Failed to approve enrollment.' });
         }
-    } catch {
+    } catch (err) {
         Swal.fire({ icon: 'error', title: 'Network Error', text: 'Please check your connection and try again.' });
     }
 }
@@ -1001,6 +1108,12 @@ function populateProfileDrawer(s) {
             ${infoRow('Total Amount Paid', '₱' + totalPaid.toLocaleString())}
             ${infoRow('Outstanding Balance', '₱' + remaining.toLocaleString())}
             
+            <div class="mt-3">
+                <button type="button" onclick="openAdminCashierPaymentModal(${s.id})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+                    <i class="fas fa-cash-register"></i> Record Cashier / Walk-in Payment
+                </button>
+            </div>
+
             <div class="mt-4 pt-3 border-t border-slate-100">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transaction History</p>
                 ${paymentHistoryHtml}
@@ -1062,6 +1175,13 @@ function populateProfileDrawer(s) {
             ${infoRow('Phone', s.guardian_phone)}
             ${infoRow('Occupation', s.guardian_occupation)}
             ${infoRow('Address', s.guardian_address)}
+        `)}
+
+        ${sectionCard('fas fa-file-alt', 'Submitted Documents', `
+            ${s.birth_cert_path ? infoRow('Birth Certificate', `<a href="${s.birth_cert_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Birth Certificate</a>`) : infoRow('Birth Certificate', '<span class="text-slate-400">Not Uploaded</span>')}
+            ${s.report_card_path ? infoRow('Report Card', `<a href="${s.report_card_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Report Card</a>`) : infoRow('Report Card', '<span class="text-slate-400">Not Uploaded</span>')}
+            ${s.good_moral_path ? infoRow('Good Moral Certificate', `<a href="${s.good_moral_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Good Moral Cert</a>`) : infoRow('Good Moral Certificate', '<span class="text-slate-400">Not Uploaded</span>')}
+            ${s.voucher_path ? infoRow('Voucher Certificate', `<a href="${s.voucher_path}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold flex items-center gap-1.5"><i class="fas fa-external-link-alt text-[10px]"></i> View Voucher Certificate</a>`) : ''}
         `)}
     `;
 }
@@ -1247,7 +1367,6 @@ function deleteSubject(id) {
     });
 }
 
-
 // ─── Sections Management ──────────────────────────────────────
 let allSections = [];
 let sectionLevelFilter = 'junior';
@@ -1313,7 +1432,7 @@ function renderSectionsTab() {
     // Render Section Cards
     const grid = document.getElementById('sectionsGrid');
     if (!filteredSections.length) {
-        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/20 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
             <i class="fas fa-layer-group text-3xl mb-3 block opacity-30"></i>
             No sections found for this filter.
         </div>`;
@@ -1324,50 +1443,48 @@ function renderSectionsTab() {
             const schedHtml = (sec.schedules && sec.schedules.length > 0)
                 ? sec.schedules.map(sch => {
                     const fmt = t => { const [h,m] = t.split(':'); const d = new Date(); d.setHours(h,m); return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}); };
-                    return `<div class="flex items-start gap-2 py-1 border-b border-slate-100 last:border-0">
+                    return `<div class="flex items-start gap-2 py-1 border-b border-slate-100 dark:border-slate-800 last:border-0">
                         <span class="shrink-0 text-[10px] font-bold text-white bg-blue-500 rounded px-1.5 py-0.5 mt-0.5 w-[30px] text-center">${sch.day.slice(0,3).toUpperCase()}</span>
                         <div class="min-w-0">
-                            <div class="text-xs font-semibold text-slate-700 truncate">${sch.subject_code}</div>
-                            <div class="text-[10px] text-slate-400">${fmt(sch.start_time)} – ${fmt(sch.end_time)} &bull; ${sch.teacher_name}${sch.room ? ' &bull; ' + sch.room : ''}</div>
+                            <div class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">${sch.subject_code}</div>
+                            <div class="text-[10px] text-slate-400 dark:text-slate-500">${fmt(sch.start_time)} – ${fmt(sch.end_time)} &bull; ${sch.teacher_name}${sch.room ? ' &bull; ' + sch.room : ''}</div>
                         </div>
                     </div>`;
                   }).join('')
-                : `<div class="text-[11px] text-slate-400 text-center py-3 italic">No schedule yet — click <i class="fas fa-calendar-alt"></i> to add</div>`;
+                : `<div class="text-[11px] text-slate-400 dark:text-slate-500 text-center py-3 italic">No schedule yet — click <i class="fas fa-calendar-alt"></i> to add</div>`;
 
-            return `
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col transition hover:border-blue-300 hover:shadow-md">
+             return `
+            <div class="bg-white dark:bg-[#181f30] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition hover:border-blue-300 dark:hover:border-blue-800 hover:shadow-md">
                 <!-- Card Header -->
-                <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50 flex justify-between items-start group cursor-pointer" onclick="openRosterModal(${sec.id})">
+                <div class="p-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-[#151f32] dark:to-[#181f30] flex justify-between items-start group cursor-pointer" onclick="openRosterModal(${sec.id})">
                     <div class="min-w-0">
-                        <h5 class="font-bold text-slate-800 text-base leading-tight">${sec.name}</h5>
-                        <p class="text-xs text-slate-500 mt-0.5">${strandLabel}Grade ${sec.grade_level} &bull; ${sec.level}</p>
+                        <h5 class="font-bold text-slate-800 dark:text-white text-base leading-tight">${sec.name}</h5>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${strandLabel}Grade ${sec.grade_level} &bull; ${sec.level}</p>
                     </div>
                     <div class="flex items-center gap-2 ml-2 shrink-0">
-                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${isFull ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${isFull ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400' : 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'}">
                             <i class="fas fa-users mr-1"></i>${sec.student_count}/${sec.max_students}
                         </span>
-                        <button onclick="event.stopPropagation(); openScheduleModal(${sec.id}, '${sec.name}', '${levelVal}', '${strandVal || ''}')" class="text-blue-400 hover:text-blue-600 bg-blue-50 hover:bg-blue-100 p-1.5 rounded-lg transition" title="Manage Schedule">
+                        <button onclick="event.stopPropagation(); openScheduleModal(${sec.id}, '${sec.name}', '${levelVal}', '${strandVal || ''}')" class="text-blue-400 hover:text-blue-600 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 p-1.5 rounded-lg transition" title="Manage Schedule">
                             <i class="fas fa-calendar-alt text-xs"></i>
                         </button>
-                        <button onclick="event.stopPropagation(); deleteSection(${sec.id})" class="text-slate-300 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-1.5 rounded-lg transition" title="Delete Section">
+                        <button onclick="event.stopPropagation(); deleteSection(${sec.id})" class="text-slate-300 hover:text-red-500 bg-slate-50 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/30 p-1.5 rounded-lg transition" title="Delete Section">
                             <i class="fas fa-trash-alt text-xs"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Schedule Preview -->
-                <div class="px-3 pt-2 pb-1 border-b border-slate-100">
+                <div class="px-3 pt-2 pb-1 border-b border-slate-100 dark:border-slate-800">
                     <div class="flex items-center justify-between mb-1">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Schedule</span>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Schedule</span>
                         <span class="text-[10px] text-blue-500 cursor-pointer hover:underline" onclick="openScheduleModal(${sec.id}, '${sec.name}', '${levelVal}', '${strandVal || ''}')">Manage &rsaquo;</span>
                     </div>
                     <div class="space-y-0 max-h-28 overflow-y-auto pr-0.5">${schedHtml}</div>
                 </div>
 
-                <!-- Card Footer (Show Students Button) -->
-                <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between mt-auto">
-                    <div class="flex items-center gap-1.5 text-xs text-slate-500">
-                        <i class="fas fa-user-graduate text-slate-400"></i>
+                <div class="p-3 bg-slate-50 dark:bg-[#151f32]/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between mt-auto">
+                    <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                        <i class="fas fa-user-graduate text-slate-400 dark:text-slate-500"></i>
                         <span>${sec.student_count} Enrolled</span>
                     </div>
                     <button onclick="openRosterModal(${sec.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1 shadow-sm">
@@ -1377,6 +1494,10 @@ function renderSectionsTab() {
             </div>`;
         }).join('');
     }
+
+
+
+
 
     // Populate Target Section Dropdown
     const targetSelect = document.getElementById('assignTargetSection');
@@ -2424,8 +2545,223 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSectionGradeOptions();
     checkAdminSession();
     loadAllTeachers();
+
+    // Search hotkey shortcut ('/' or 'Ctrl+K')
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === '/' || (e.ctrlKey && e.key === 'k')) && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+            e.preventDefault();
+            const searchInput = document.getElementById('searchStudents') || document.getElementById('searchEnrollments');
+            if (searchInput) searchInput.focus();
+        }
+    });
 });
 
 function exportDatabaseSQL() {
     window.location.href = 'php/api.php?action=exportDatabaseSQL';
 }
+
+// ─── Walk-in Cashier Payments & Receipts ─────────────────────
+
+function toggleInitialPaymentFields() {
+    const isChecked = document.getElementById('toggleInitialPayment')?.checked;
+    const fieldsDiv = document.getElementById('initialPaymentFields');
+    if (fieldsDiv) {
+        if (isChecked) {
+            fieldsDiv.classList.remove('hidden');
+        } else {
+            fieldsDiv.classList.add('hidden');
+        }
+    }
+}
+window.toggleInitialPaymentFields = toggleInitialPaymentFields;
+
+function openAdminCashierPaymentModal(studentId) {
+    const student = allStudents.find(s => s.id == studentId);
+    if (!student) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Student record not found.' });
+        return;
+    }
+
+    const isSeniorHigh = student.level && student.level.toLowerCase().includes('senior');
+    const voucherType = student.voucher_eligibility || '';
+    
+    let tuition = isSeniorHigh ? 20000 : 12000;
+    let registration = 500;
+    let lab = isSeniorHigh ? 1500 : 500;
+    let library = isSeniorHigh ? 500 : 300;
+    let idFee = 200;
+    let uniform = isSeniorHigh ? 3000 : 0;
+    
+    let subtotal = tuition + registration + lab + library + idFee + uniform;
+    let voucherDeduction = 0;
+    
+    if (isSeniorHigh) {
+        if (voucherType === 'public-school' || voucherType === 'same-school') {
+            voucherDeduction = tuition + registration + lab + library + idFee;
+        } else if (voucherType === 'private-school') {
+            voucherDeduction = 17500;
+        }
+    }
+    
+    const totalToPay = subtotal - voucherDeduction;
+    const totalPaid = parseFloat(student.total_paid) || 0;
+    const remaining = Math.max(0, totalToPay - totalPaid);
+
+    document.getElementById('cashierStudentId').value = student.id;
+    document.getElementById('cashierStudentName').textContent = `${student.first_name} ${student.last_name}`;
+    document.getElementById('cashierStudentIdNum').textContent = student.student_id ? `ID: ${student.student_id}` : 'ID Pending';
+    document.getElementById('cashierCurrentBalance').textContent = `₱${remaining.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    
+    document.getElementById('cashierAmount').value = remaining > 0 ? remaining : '';
+    document.getElementById('cashierOR').value = '';
+    document.getElementById('cashierNotes').value = '';
+    document.getElementById('cashierMethod').value = 'Cash';
+
+    const modal = document.getElementById('adminCashierPaymentModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+window.openAdminCashierPaymentModal = openAdminCashierPaymentModal;
+
+function closeAdminCashierPaymentModal() {
+    const modal = document.getElementById('adminCashierPaymentModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+window.closeAdminCashierPaymentModal = closeAdminCashierPaymentModal;
+
+async function submitAdminCashierPayment(event) {
+    if (event) event.preventDefault();
+
+    const studentId     = document.getElementById('cashierStudentId').value;
+    const amount        = parseFloat(document.getElementById('cashierAmount').value) || 0;
+    const paymentMethod = document.getElementById('cashierMethod').value;
+    const orNumber      = document.getElementById('cashierOR').value.trim();
+    const notes         = document.getElementById('cashierNotes').value.trim();
+
+    if (!studentId || amount <= 0) {
+        Swal.fire({ icon: 'warning', title: 'Invalid Payment', text: 'Please enter a valid payment amount greater than zero.' });
+        return;
+    }
+
+    Swal.fire({ title: 'Processing cash payment…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        const res = await fetch('php/api.php?action=recordAdminPayment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId, amount, paymentMethod, orNumber, notes })
+        });
+        
+        const rawText = await res.text();
+        let result;
+        try {
+            result = JSON.parse(rawText);
+        } catch (parseErr) {
+            Swal.fire({ icon: 'error', title: 'Server Error', text: 'Server response error: ' + rawText.substring(0, 150) });
+            return;
+        }
+
+        if (result.success) {
+            safeCloseSwal();
+            closeAdminCashierPaymentModal();
+            
+            // Refresh student data & drawer if open
+            await loadAllStudents();
+            if (typeof currentReviewId !== 'undefined' && currentReviewId == studentId) {
+                openProfileDrawer(studentId);
+            }
+
+            // Show Official Receipt Modal
+            openOfficialReceiptModal({
+                orNumber: result.reference_no,
+                studentName: result.student_name,
+                studentId: result.student_id_num || '—',
+                method: result.payment_method,
+                amountPaid: result.amount,
+                remainingBalance: typeof result.remaining_balance === 'number' ? result.remaining_balance : 0
+            });
+        } else {
+            Swal.fire({ icon: 'error', title: 'Payment Failed', text: result.message || 'Could not record cashier payment.' });
+        }
+    } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Network Error', text: err.message || 'Failed to communicate with server. Please try again.' });
+    }
+}
+window.submitAdminCashierPayment = submitAdminCashierPayment;
+
+function openOfficialReceiptModal(data) {
+    document.getElementById('receiptOR').textContent = data.orNumber || '—';
+    document.getElementById('receiptStudentName').textContent = data.studentName || '—';
+    document.getElementById('receiptStudentId').textContent = data.studentId || '—';
+    document.getElementById('receiptMethod').textContent = data.method || 'Cash';
+    document.getElementById('receiptDateTime').textContent = new Date().toLocaleString();
+    
+    document.getElementById('receiptAmountPaid').textContent = `₱${parseFloat(data.amountPaid).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    
+    const remBal = typeof data.remainingBalance === 'number' ? data.remainingBalance : 0;
+    document.getElementById('receiptRemainingBalance').textContent = `₱${remBal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+
+    const modal = document.getElementById('officialReceiptModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+window.openOfficialReceiptModal = openOfficialReceiptModal;
+
+function closeOfficialReceiptModal() {
+    const modal = document.getElementById('officialReceiptModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+window.closeOfficialReceiptModal = closeOfficialReceiptModal;
+
+function printReceipt() {
+    const receiptContent = document.getElementById('printableReceiptArea').innerHTML;
+    const printWindow = window.open('', '_blank', 'width=600,height=700');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Official Receipt - JJKings Academy</title>
+            <script src="javascript/tailwind.js"></script>
+            <style>
+                body { font-family: sans-serif; padding: 20px; background: #fff; color: #000; }
+                @media print {
+                    body { padding: 0; }
+                }
+            </style>
+        </head>
+        <body onload="window.print(); setTimeout(() => window.close(), 500);">
+            <div style="max-width: 400px; margin: 0 auto; border: 1px solid #ccc; padding: 20px; border-radius: 12px;">
+                \${receiptContent}
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+window.printReceipt = printReceipt;
+
+function safeCloseSwal() {
+    try {
+        if (typeof Swal !== 'undefined') {
+            if (typeof Swal.close === 'function') Swal.close();
+            else if (typeof Swal.closeModal === 'function') Swal.closeModal();
+            else if (typeof Swal.clickConfirm === 'function' && Swal.isVisible && Swal.isVisible()) Swal.clickConfirm();
+        }
+        if (typeof swal !== 'undefined' && typeof swal.close === 'function') {
+            swal.close();
+        }
+    } catch(e) {
+        // Silently ignore
+    }
+}
+window.safeCloseSwal = safeCloseSwal;

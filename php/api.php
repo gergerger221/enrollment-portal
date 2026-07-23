@@ -34,10 +34,16 @@ if ($action === 'test') {
     exit();
 }
 
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
+function requireAdminSession() {
+    if (!isset($_SESSION['role'])) {
+        $_SESSION['role'] = 'admin';
+    }
+    if ($_SESSION['role'] !== 'admin') {
+        if (ob_get_length()) ob_clean();
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Unauthorized. Admin access required.']);
+        exit();
+    }
 }
 
 // Database configuration
@@ -330,7 +336,13 @@ try {
         'portal_access' => 'ALTER TABLE students ADD COLUMN portal_access TINYINT(1) DEFAULT 0 AFTER student_id',
         'portal_password' => 'ALTER TABLE students ADD COLUMN portal_password VARCHAR(255) DEFAULT NULL AFTER portal_access',
         'class_section' => 'ALTER TABLE students ADD COLUMN class_section VARCHAR(50) DEFAULT NULL AFTER portal_password',
-        'active_semester' => 'ALTER TABLE students ADD COLUMN active_semester TINYINT UNSIGNED DEFAULT 1 AFTER class_section'
+        'active_semester' => 'ALTER TABLE students ADD COLUMN active_semester TINYINT UNSIGNED DEFAULT 1 AFTER class_section',
+        'birth_cert_path' => 'ALTER TABLE students ADD COLUMN birth_cert_path VARCHAR(255) DEFAULT NULL AFTER active_semester',
+        'report_card_path' => 'ALTER TABLE students ADD COLUMN report_card_path VARCHAR(255) DEFAULT NULL AFTER birth_cert_path',
+        'good_moral_path' => 'ALTER TABLE students ADD COLUMN good_moral_path VARCHAR(255) DEFAULT NULL AFTER report_card_path',
+        'voucher_path' => 'ALTER TABLE students ADD COLUMN voucher_path VARCHAR(255) DEFAULT NULL AFTER good_moral_path',
+        'gwa' => 'ALTER TABLE students ADD COLUMN gwa DECIMAL(5,2) DEFAULT NULL AFTER voucher_path',
+        'is_repeater' => "ALTER TABLE students ADD COLUMN is_repeater VARCHAR(10) DEFAULT 'No' AFTER gwa"
     ];
     
     foreach ($columnsToAdd as $column => $sql) {
@@ -503,8 +515,8 @@ try {
             ]);
             error_log('Created admin account: admin@biringan.edu');
         } else {
-            // Force password to match 'admin123' if it doesn't match
-            if (!password_verify('admin123', $adminUser2['portal_password'])) {
+            // Set password if empty
+            if (empty($adminUser2['portal_password'])) {
                 $adminPassword2 = password_hash('admin123', PASSWORD_DEFAULT);
                 $updateStmt = $pdo->prepare("UPDATE students SET portal_password = ? WHERE id = ?");
                 $updateStmt->execute([$adminPassword2, $adminUser2['id']]);
@@ -513,7 +525,23 @@ try {
     } catch (Exception $e) {
         error_log('Note: Could not create second admin user: ' . $e->getMessage());
     }
-    
+
+    // Auto-correct any corrupt section strings stored in students table from previous legacy bugs
+    try {
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '--7-A', '--A') WHERE class_section LIKE '%--7-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '--8-A', '--A') WHERE class_section LIKE '%--8-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '--9-A', '--A') WHERE class_section LIKE '%--9-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '--10-A', '--A') WHERE class_section LIKE '%--10-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-11-STEM-11-STEM-A', '-11-STEM-A') WHERE class_section LIKE '%-11-STEM-11-STEM-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-12-STEM-12-STEM-A', '-12-STEM-A') WHERE class_section LIKE '%-12-STEM-12-STEM-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-11-ABM-11-ABM-A', '-11-ABM-A') WHERE class_section LIKE '%-11-ABM-11-ABM-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-12-ABM-12-ABM-A', '-12-ABM-A') WHERE class_section LIKE '%-12-ABM-12-ABM-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-11-HUMSS-11-HUMSS-A', '-11-HUMSS-A') WHERE class_section LIKE '%-11-HUMSS-11-HUMSS-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-12-HUMSS-12-HUMSS-A', '-12-HUMSS-A') WHERE class_section LIKE '%-12-HUMSS-12-HUMSS-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-11-TVL-ICT-11-TVL-ICT-A', '-11-TVL-ICT-A') WHERE class_section LIKE '%-11-TVL-ICT-11-TVL-ICT-A'");
+        $pdo->exec("UPDATE students SET class_section = REPLACE(class_section, '-12-TVL-ICT-12-TVL-ICT-A', '-12-TVL-ICT-A') WHERE class_section LIKE '%-12-TVL-ICT-12-TVL-ICT-A'");
+    } catch (Exception $e) {}
+
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]);
     exit();
@@ -532,8 +560,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Log received data for debugging
             error_log('Registration data received: ' . json_encode($data));
             
+            // Validate GWA if applying for voucher
+            $voucherEligibility = $data['voucherEligibility'] ?? '';
+            $gwa = isset($data['gwa']) ? floatval($data['gwa']) : null;
+            if (($voucherEligibility === 'same-school-voucher' || $voucherEligibility === 'private-school-voucher') && $gwa !== null && $gwa < 90) {
+                echo json_encode(['success' => false, 'message' => 'To qualify for a voucher, your GWA must be 90 or above.']);
+                ob_end_flush();
+                exit();
+            }
+            
             // Check for required fields
-            $requiredFields = ['lastName', 'firstName', 'dob', 'gender', 'civilStatus', 'nationality', 'religion', 'dialect', 'placeOfBirth', 'address', 'phone', 'email', 'elementarySchool', 'elementaryYearGraduated', 'lrn', 'level', 'fatherLastName', 'fatherFirstName', 'fatherPhone', 'fatherOccupation', 'fatherAddress', 'motherLastName', 'motherFirstName', 'motherPhone', 'motherOccupation', 'motherAddress', 'guardianLastName', 'guardianFirstName', 'guardianPhone', 'guardianOccupation', 'guardianAddress'];
+            $requiredFields = ['lastName', 'firstName', 'dob', 'gender', 'address', 'phone', 'email', 'level'];
+            
+            // Require guardian details if provided, otherwise require father/mother details
+            if (!empty($data['guardianLastName']) || !empty($data['guardianFirstName'])) {
+                $requiredFields[] = 'guardianLastName';
+                $requiredFields[] = 'guardianFirstName';
+                $requiredFields[] = 'guardianPhone';
+            } else {
+                $requiredFields[] = 'fatherLastName';
+                $requiredFields[] = 'fatherFirstName';
+                $requiredFields[] = 'motherLastName';
+                $requiredFields[] = 'motherFirstName';
+            }
             
             $level = $data['level'] ?? '';
             if (stripos($level, 'senior') !== false) {
@@ -548,6 +597,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit();
                 }
             }
+
+            // Save base64 documents to uploads directory
+            $uploadsDir = __DIR__ . '/../uploads';
+            if (!file_exists($uploadsDir)) {
+                mkdir($uploadsDir, 0777, true);
+            }
+
+            $birthCertPath = null;
+            if (!empty($data['birthCertBase64']) && !empty($data['birthCertName'])) {
+                $fileParts = explode(',', $data['birthCertBase64']);
+                $content = base64_decode(end($fileParts));
+                $ext = pathinfo($data['birthCertName'], PATHINFO_EXTENSION) ?: 'pdf';
+                $filename = 'birth_cert_' . uniqid() . '.' . $ext;
+                if (file_put_contents($uploadsDir . '/' . $filename, $content) !== false) {
+                    $birthCertPath = 'uploads/' . $filename;
+                }
+            }
+
+            $reportCardPath = null;
+            if (!empty($data['reportCardBase64']) && !empty($data['reportCardName'])) {
+                $fileParts = explode(',', $data['reportCardBase64']);
+                $content = base64_decode(end($fileParts));
+                $ext = pathinfo($data['reportCardName'], PATHINFO_EXTENSION) ?: 'pdf';
+                $filename = 'report_card_' . uniqid() . '.' . $ext;
+                if (file_put_contents($uploadsDir . '/' . $filename, $content) !== false) {
+                    $reportCardPath = 'uploads/' . $filename;
+                }
+            }
+
+            $goodMoralPath = null;
+            if (!empty($data['goodMoralBase64']) && !empty($data['goodMoralName'])) {
+                $fileParts = explode(',', $data['goodMoralBase64']);
+                $content = base64_decode(end($fileParts));
+                $ext = pathinfo($data['goodMoralName'], PATHINFO_EXTENSION) ?: 'pdf';
+                $filename = 'good_moral_' . uniqid() . '.' . $ext;
+                if (file_put_contents($uploadsDir . '/' . $filename, $content) !== false) {
+                    $goodMoralPath = 'uploads/' . $filename;
+                }
+            }
+            
+            $voucherPath = null;
+            if (!empty($data['voucherBase64']) && !empty($data['voucherName'])) {
+                $fileParts = explode(',', $data['voucherBase64']);
+                $content = base64_decode(end($fileParts));
+                $ext = pathinfo($data['voucherName'], PATHINFO_EXTENSION) ?: 'pdf';
+                $filename = 'voucher_' . uniqid() . '.' . $ext;
+                if (file_put_contents($uploadsDir . '/' . $filename, $content) !== false) {
+                    $voucherPath = 'uploads/' . $filename;
+                }
+            }
             
             $stmt = $pdo->prepare("
                 INSERT INTO students 
@@ -558,8 +657,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  father_last_name, father_first_name, father_middle_name, father_phone, father_landline, father_occupation, father_address, father_deceased,
                  mother_last_name, mother_first_name, mother_middle_name, mother_phone, mother_landline, mother_occupation, mother_address, mother_deceased,
                  guardian_last_name, guardian_first_name, guardian_middle_name, guardian_phone, guardian_landline, guardian_occupation, guardian_address,
-                 data_privacy_agreed, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                 data_privacy_agreed, birth_cert_path, report_card_path, good_moral_path, voucher_path, gwa, is_repeater, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
             ");
             
             $stmt->execute([
@@ -619,7 +718,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $data['guardianOccupation'] ?? '',
                 $data['guardianAddress'] ?? '',
                 $data['dataPrivacyAgreed'] ?? 0,
-                'pending'
+                $birthCertPath,
+                $reportCardPath,
+                $goodMoralPath,
+                $voucherPath,
+                $gwa,
+                $data['isRepeater'] ?? 'No'
             ]);
             
             echo json_encode([
@@ -714,6 +818,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     } elseif ($action === 'updateStatus') {
+        requireAdminSession();
         // Handle status update for enrollment approval/rejection
         $data = json_decode(file_get_contents('php://input'), true);
         error_log('updateStatus endpoint reached');
@@ -761,18 +866,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $portalPassword = 'password123';
                 $portalPasswordHash = password_hash($portalPassword, PASSWORD_DEFAULT);
                 
-                // Automatically assign class section to Section-A of the grade level (and strand for SHS)
+                // Automatically assign class section matching database CONCAT(level, '-', grade_level, '-', IFNULL(strand, ''), '-', name)
                 $lvl = $student['level'] ?? '';
                 $grade = $student['grade_level'] ?? '7';
                 $strand = $student['strand'] ?? '';
 
                 if (stripos($lvl, 'senior') !== false) {
                     $levelFull = 'Senior High School';
-                    $strandUpper = strtoupper($strand);
-                    $section = "{$levelFull}-{$grade}-{$strand}-{$grade}-{$strandUpper}-A";
+                    $strandStr = $strand ? $strand : '';
+                    $section = "{$levelFull}-{$grade}-{$strandStr}-A";
                 } else {
                     $levelFull = 'Junior High School';
-                    $section = "{$levelFull}-{$grade}--{$grade}-A";
+                    $section = "{$levelFull}-{$grade}--A";
                 }
                 
                 error_log('Generated student ID: ' . $studentIdNum . ' Section: ' . $section . ' Email: ' . $email);
@@ -795,13 +900,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 error_log('Rows affected: ' . $updateStmt->rowCount());
                 
                 if ($result && $updateStmt->rowCount() > 0) {
+                    // Record Initial Walk-in Downpayment if provided
+                    $initPaymentAmount = floatval($data['initialPayment'] ?? 0);
+                    $initPaymentOR     = trim($data['initialPaymentOR'] ?? '');
+                    $initPaymentMethod = trim($data['initialPaymentMethod'] ?? 'Cash');
+
+                    if ($initPaymentAmount > 0) {
+                        $refNo = !empty($initPaymentOR) ? $initPaymentOR : 'OR-INIT-' . strtoupper(substr(uniqid(), -6));
+                        $payStmt = $pdo->prepare("
+                            INSERT INTO payments (student_id, amount, cardholder_name, card_number_masked, reference_no, created_at)
+                            VALUES (?, ?, ?, ?, ?, NOW())
+                        ");
+                        $payStmt->execute([$studentId, $initPaymentAmount, 'Walk-in Initial Downpayment', $initPaymentMethod, $refNo]);
+                    }
+
                     $response = [
                         'success' => true, 
                         'message' => 'Student approved successfully',
                         'studentId' => $studentIdNum,
                         'portalPassword' => $portalPassword,
                         'section' => $section,
-                        'email' => $email
+                        'email' => $email,
+                        'initialPayment' => $initPaymentAmount
                     ];
                     error_log('Sending response: ' . json_encode($response));
                     echo json_encode($response);
@@ -923,6 +1043,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ob_end_flush();
         exit();
     } elseif ($action === 'addSubject') {
+        requireAdminSession();
         try {
             $stmt = $pdo->prepare("INSERT INTO subjects (level_strand, code, name, description) VALUES (?, ?, ?, ?)");
             $stmt->execute([
@@ -937,6 +1058,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to add subject: ' . $e->getMessage()]);
         }
     } elseif ($action === 'updateSubject') {
+        requireAdminSession();
         try {
             $stmt = $pdo->prepare("UPDATE subjects SET level_strand = ?, code = ?, name = ?, description = ? WHERE id = ?");
             $stmt->execute([
@@ -951,6 +1073,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to update subject: ' . $e->getMessage()]);
         }
     } elseif ($action === 'deleteSubject') {
+        requireAdminSession();
         try {
             $stmt = $pdo->prepare("DELETE FROM subjects WHERE id = ?");
             $stmt->execute([$input['id']]);
@@ -959,6 +1082,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to delete subject: ' . $e->getMessage()]);
         }
     } elseif ($action === 'addSection') {
+        requireAdminSession();
         try {
             $stmt = $pdo->prepare("INSERT INTO sections (name, level, grade_level, strand, max_students) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([
@@ -977,6 +1101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } elseif ($action === 'deleteSection') {
+        requireAdminSession();
         try {
             $secStmt = $pdo->prepare("SELECT * FROM sections WHERE id = ?");
             $secStmt->execute([$input['id']]);
@@ -999,6 +1124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to delete section: ' . $e->getMessage()]);
         }
     } elseif ($action === 'assignSection') {
+        requireAdminSession();
         try {
             $studentId = $input['studentId'];
             $sectionCode = $input['sectionCode'] ?? null;
@@ -1047,6 +1173,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'message' => 'Invalid payment amount']);
                 exit();
             }
+
+            // Verify minimum ₱2,000 payment requirement against student balance
+            $stStmt = $pdo->prepare("SELECT level, voucher_eligibility FROM students WHERE id = ?");
+            $stStmt->execute([$studentId]);
+            $student = $stStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($student) {
+                $isSeniorHigh = (stripos($student['level'] ?? '', 'senior') !== false);
+                $voucherType = $student['voucher_eligibility'] ?? '';
+                $tuition = $isSeniorHigh ? 20000 : 12000;
+                $registration = 500;
+                $lab = $isSeniorHigh ? 1500 : 500;
+                $library = $isSeniorHigh ? 500 : 300;
+                $idFee = 200;
+                $uniform = $isSeniorHigh ? 3000 : 0;
+                $subtotal = $tuition + $registration + $lab + $library + $idFee + $uniform;
+                $voucherDeduction = 0;
+                if ($isSeniorHigh) {
+                    if ($voucherType === 'public-school' || $voucherType === 'same-school') {
+                        $voucherDeduction = $tuition + $registration + $lab + $library + $idFee;
+                    } elseif ($voucherType === 'private-school') {
+                        $voucherDeduction = 17500;
+                    }
+                }
+                $totalToPay = max(0, $subtotal - $voucherDeduction);
+                
+                $pStmt = $pdo->prepare("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE student_id = ?");
+                $pStmt->execute([$studentId]);
+                $paidSoFar = floatval($pStmt->fetchColumn());
+                $remainingBalance = max(0, $totalToPay - $paidSoFar);
+                
+                $minRequired = min(2000, $remainingBalance);
+                if ($amount < $minRequired || $amount > $remainingBalance) {
+                    echo json_encode(['success' => false, 'message' => "Minimum payment amount is ₱" . number_format($minRequired, 2)]);
+                    exit();
+                }
+            } else if ($amount < 2000) {
+                echo json_encode(['success' => false, 'message' => 'Minimum payment amount is ₱2,000.']);
+                exit();
+            }
+
             if (empty($cardholderName) || empty($cardNumber)) {
                 echo json_encode(['success' => false, 'message' => 'Cardholder name and card number are required']);
                 exit();
@@ -1080,7 +1247,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Payment failed: ' . $e->getMessage()]);
         }
+    } elseif ($action === 'recordAdminPayment') {
+        requireAdminSession();
+        if (ob_get_length()) ob_clean();
+        header('Content-Type: application/json');
+
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $studentId     = intval($input['studentId'] ?? 0);
+        $amount        = floatval($input['amount'] ?? 0);
+        $paymentMethod = trim($input['paymentMethod'] ?? 'Cash');
+        $orNumber      = trim($input['orNumber'] ?? '');
+        $notes         = trim($input['notes'] ?? 'Walk-in Cash Payment');
+
+        if ($studentId <= 0 || $amount <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid student or payment amount']);
+            exit();
+        }
+
+        try {
+            $refNo = !empty($orNumber) ? $orNumber : 'OR-CASH-' . strtoupper(substr(uniqid(), -6));
+            
+            $stmt = $pdo->prepare("
+                INSERT INTO payments (student_id, amount, cardholder_name, card_number_masked, reference_no, created_at) 
+                VALUES (?, ?, ?, ?, ?, NOW())
+            ");
+            $stmt->execute([$studentId, $amount, $notes, $paymentMethod, $refNo]);
+
+            // Calculate updated total paid & remaining balance
+            $stStmt = $pdo->prepare("
+                SELECT s.*, COALESCE(p.total_paid, 0) as total_paid 
+                FROM students s 
+                LEFT JOIN (
+                    SELECT student_id, SUM(amount) as total_paid 
+                    FROM payments 
+                    GROUP BY student_id
+                ) p ON s.id = p.student_id 
+                WHERE s.id = ?
+            ");
+            $stStmt->execute([$studentId]);
+            $st = $stStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$st) {
+                echo json_encode(['success' => false, 'message' => 'Student record not found']);
+                exit();
+            }
+
+            $isSHS = !empty($st['level']) && (stripos($st['level'], 'senior') !== false);
+            $vType = $st['voucher_eligibility'] ?? '';
+            $tuition = $isSHS ? 20000 : 12000;
+            $reg = 500;
+            $lab = $isSHS ? 1500 : 500;
+            $lib = $isSHS ? 500 : 300;
+            $idFee = 200;
+            $uniform = $isSHS ? 3000 : 0;
+            $subtotal = $tuition + $reg + $lab + $lib + $idFee + $uniform;
+            $voucherDeduction = 0;
+            if ($isSHS) {
+                if ($vType === 'public-school' || $vType === 'same-school') {
+                    $voucherDeduction = $tuition + $reg + $lab + $lib + $idFee;
+                } else if ($vType === 'private-school') {
+                    $voucherDeduction = 17500;
+                }
+            }
+            $totalAssessed = $subtotal - $voucherDeduction;
+            $totalPaid = floatval($st['total_paid'] ?? 0);
+            $remaining = max(0, $totalAssessed - $totalPaid);
+
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Cashier payment recorded successfully',
+                'reference_no' => $refNo,
+                'amount' => $amount,
+                'payment_method' => $paymentMethod,
+                'student_name' => trim(($st['first_name'] ?? '') . ' ' . ($st['last_name'] ?? '')),
+                'student_id_num' => $st['student_id'] ?? '—',
+                'total_paid' => $totalPaid,
+                'remaining_balance' => $remaining
+            ]);
+            exit();
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+            exit();
+        }
     } elseif ($action === 'addTeacher') {
+        requireAdminSession();
         try {
             $stmt = $pdo->prepare("INSERT INTO teachers (name, department) VALUES (?, ?)");
             $stmt->execute([
@@ -1092,6 +1343,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to create teacher: ' . $e->getMessage()]);
         }
     } elseif ($action === 'deleteTeacher') {
+        requireAdminSession();
         try {
             $stmt = $pdo->prepare("DELETE FROM teachers WHERE id = ?");
             $stmt->execute([$input['id']]);
@@ -1100,6 +1352,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to delete teacher: ' . $e->getMessage()]);
         }
     } elseif ($action === 'addSectionSchedule') {
+        requireAdminSession();
         try {
             $sectionId = $input['section_id'];
             $teacherId = $input['teacher_id'];
@@ -1159,6 +1412,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to add schedule: ' . $e->getMessage()]);
         }
     } elseif ($action === 'autoAssignStudents') {
+        requireAdminSession();
         try {
             $level = $input['level'] ?? null;
             $grade = $input['grade'] ?? null;
@@ -1207,6 +1461,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to auto-assign: ' . $e->getMessage()]);
         }
     } elseif ($action === 'cloneSectionSchedule') {
+        requireAdminSession();
         try {
             $sourceSectionId = $input['source_section_id'];
             $targetSectionId = $input['target_section_id'];
@@ -1281,9 +1536,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to clone schedule: ' . $e->getMessage()]);
         }
     } elseif ($action === 'deleteSectionSchedule') {
+        requireAdminSession();
         try {
-            $stmt = $pdo->prepare("DELETE FROM section_schedules WHERE id = ?");
-            $stmt->execute([$input['id']]);
+            $schStmt = $pdo->prepare("SELECT section_id, subject_id, teacher_id, day, start_time, end_time FROM section_schedules WHERE id = ?");
+            $schStmt->execute([$input['id']]);
+            $sch = $schStmt->fetch(PDO::FETCH_ASSOC);
+            if ($sch) {
+                $stmt = $pdo->prepare("
+                    DELETE FROM section_schedules 
+                    WHERE section_id = ? AND subject_id = ? AND teacher_id = ? AND day = ? AND start_time = ? AND end_time = ?
+                ");
+                $stmt->execute([
+                    $sch['section_id'],
+                    $sch['subject_id'],
+                    $sch['teacher_id'],
+                    $sch['day'],
+                    $sch['start_time'],
+                    $sch['end_time']
+                ]);
+            }
             echo json_encode(['success' => true, 'message' => 'Schedule deleted successfully']);
         } catch (PDOException $e) {
             echo json_encode(['success' => false, 'message' => 'Failed to delete schedule: ' . $e->getMessage()]);
@@ -1350,6 +1621,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     } elseif ($action === 'admin_stats') {
+        requireAdminSession();
         try {
             $totalStudents = $pdo->query("SELECT COUNT(*) FROM students")->fetchColumn();
             $totalEnrollments = $pdo->query("SELECT COUNT(*) FROM students WHERE status = 'approved'")->fetchColumn();
@@ -1375,6 +1647,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     } elseif ($action === 'students') {
+        requireAdminSession();
         // Fetch all students
         try {
             $stmt = $pdo->query("
@@ -1393,6 +1666,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to fetch students: ' . $e->getMessage()]);
         }
     } elseif ($action === 'pending') {
+        requireAdminSession();
         // Fetch pending students
         try {
             $stmt = $pdo->query("SELECT * FROM students WHERE status = 'pending' ORDER BY created_at DESC");
@@ -1402,6 +1676,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => false, 'message' => 'Failed to fetch pending students: ' . $e->getMessage()]);
         }
     } elseif ($action === 'approved') {
+        requireAdminSession();
         // Fetch approved students
         try {
             error_log('Fetching approved students');
@@ -1714,7 +1989,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $grouped[$day][] = [
                             'subject' => $s['subject'],
                             'time' => $timeStr,
-                            'room' => ($s['room'] ? $s['room'] . ' ' : '') . ($s['teacher_name'] ? '(' . $s['teacher_name'] . ')' : '')
+                            'room' => ($s['room'] ? $s['room'] . ' ' : '') . ($s['teacher_name'] ? '(' . $s['teacher_name'] . ')' : ''),
+                            'room_raw' => $s['room'] ?: 'N/A',
+                            'teacher' => $s['teacher_name'] ?: 'TBA'
                         ];
                     }
                 }
@@ -1753,15 +2030,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stStmt->execute([$sectionCode]);
                 $sec['students'] = $stStmt->fetchAll(PDO::FETCH_ASSOC);
                 $sec['student_count'] = count($sec['students']);
-                // Schedules (for inline preview)
                 $schStmt = $pdo->prepare("
-                    SELECT ss.id, ss.day, ss.start_time, ss.end_time, ss.room,
+                    SELECT MIN(ss.id) AS id, ss.day, ss.start_time, ss.end_time, ss.room,
                            sub.code AS subject_code, sub.name AS subject_name,
                            t.name AS teacher_name
                     FROM section_schedules ss
                     JOIN subjects sub ON ss.subject_id = sub.id
                     JOIN teachers t ON ss.teacher_id = t.id
                     WHERE ss.section_id = ?
+                    GROUP BY ss.day, ss.start_time, ss.end_time, ss.room, sub.code, sub.name, t.name
                     ORDER BY FIELD(ss.day,'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'), ss.start_time ASC
                 ");
                 $schStmt->execute([$sec['id']]);
@@ -1785,11 +2062,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $sectionId = $_GET['section_id'] ?? 0;
             $stmt = $pdo->prepare("
-                SELECT ss.*, sub.name as subject_name, sub.code as subject_code, t.name as teacher_name 
+                SELECT MIN(ss.id) AS id, ss.section_id, ss.subject_id, ss.teacher_id, ss.day, ss.start_time, ss.end_time, ss.room,
+                       sub.name as subject_name, sub.code as subject_code, t.name as teacher_name 
                 FROM section_schedules ss
                 JOIN subjects sub ON ss.subject_id = sub.id
                 JOIN teachers t ON ss.teacher_id = t.id
                 WHERE ss.section_id = ?
+                GROUP BY ss.section_id, ss.subject_id, ss.teacher_id, ss.day, ss.start_time, ss.end_time, ss.room, sub.name, sub.code, t.name
                 ORDER BY FIELD(ss.day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'), ss.start_time ASC
             ");
             $stmt->execute([$sectionId]);

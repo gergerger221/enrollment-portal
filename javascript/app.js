@@ -1,14 +1,31 @@
 // Customize SweetAlert2 to match the landing page modal design
-const Swal = window.Swal.mixin({
+const baseSwal = window.Swal.mixin({
     customClass: {
-        popup: 'rounded-xl shadow-2xl p-8 border border-gray-100 max-w-md w-full',
-        title: 'text-2xl font-bold text-gray-800',
-        htmlContainer: 'text-gray-600 text-sm leading-relaxed mt-2',
+        popup: 'rounded-xl shadow-2xl p-8 border border-gray-100 dark:border-slate-800 max-w-md w-full',
+        title: 'text-2xl font-bold text-gray-800 dark:text-white',
+        htmlContainer: 'text-gray-600 dark:text-gray-300 text-sm leading-relaxed mt-2',
         confirmButton: 'bg-[#007dfe] text-white px-6 py-2.5 rounded-lg hover:bg-[#004b87] transition font-medium focus:ring-2 focus:ring-blue-300 border-none outline-none mx-2 cursor-pointer',
         cancelButton: 'bg-gray-500 text-white px-6 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium focus:ring-2 focus:ring-gray-300 border-none outline-none mx-2 cursor-pointer'
     },
     buttonsStyling: false
 });
+
+const Swal = {
+    fire: function(options) {
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        let swalOptions = typeof options === 'string' ? { title: options } : { ...options };
+        
+        if (isDark) {
+            swalOptions.background = '#181832';
+            swalOptions.color = '#ffffff';
+        } else {
+            swalOptions.background = '#ffffff';
+            swalOptions.color = '#1f2937';
+        }
+        
+        return baseSwal.fire(swalOptions);
+    }
+};
 
 // App State
 let currentUser = null;
@@ -146,6 +163,7 @@ function showAuthenticatedView(user) {
 function showLogoutConfirmation() {
     const modal = document.getElementById('logoutConfirmationModal');
     const content = document.getElementById('logoutConfirmationContent');
+    if (!modal || !content) return;
     modal.classList.remove('hidden');
     modal.classList.add('flex');
     setTimeout(() => {
@@ -157,6 +175,7 @@ function showLogoutConfirmation() {
 function hideLogoutConfirmation() {
     const modal = document.getElementById('logoutConfirmationModal');
     const content = document.getElementById('logoutConfirmationContent');
+    if (!modal || !content) return;
     content.classList.remove('scale-100', 'opacity-100');
     content.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
@@ -188,9 +207,12 @@ function logoutUser() {
     if (faqBtn) faqBtn.classList.remove('hidden');
     if (logoutBtn) logoutBtn.classList.add('hidden');
     
-    document.getElementById('welcomeNav').classList.remove('hidden');
-    document.getElementById('mainNav').classList.add('hidden');
-    document.getElementById('sidebarNav').classList.remove('hidden');
+    const welcomeNav = document.getElementById('welcomeNav');
+    const mainNav = document.getElementById('mainNav');
+    const sidebarNav = document.getElementById('sidebarNav');
+    if (welcomeNav) welcomeNav.classList.remove('hidden');
+    if (mainNav) mainNav.classList.add('hidden');
+    if (sidebarNav) sidebarNav.classList.remove('hidden');
     
     showWelcome();
     // Restore landing extras on logout
@@ -214,7 +236,6 @@ function showSection(sectionId) {
         sectionElement.classList.remove('hidden');
     }
     if (sectionId === 'enroll') {
-        loadStudentSelect();
         renderCourses();
     } else if (sectionId === 'admin') {
         updateAdminDashboard();
@@ -272,21 +293,37 @@ function showToast(message, type = 'success') {
 async function handleRegistration(e) {
     e.preventDefault();
 
+    const guardianFullName = (document.getElementById('guardianName')?.value || 'Guardian').trim();
+    const guardianParts = guardianFullName.split(' ');
+    const guardianFirstName = guardianParts[0] || 'Guardian';
+    const guardianLastName = guardianParts.slice(1).join(' ') || 'Guardian';
+
     const data = {
         lastName: document.getElementById('lastName').value,
         firstName: document.getElementById('firstName').value,
-        middleName: document.getElementById('middleName').value,
+        middleName: document.getElementById('middleName')?.value || '',
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
         dob: document.getElementById('dob').value,
+        gender: 'Male',
+        civilStatus: 'Single',
+        nationality: 'Filipino',
+        religion: 'N/A',
+        dialect: 'Tagalog',
+        placeOfBirth: 'N/A',
         address: document.getElementById('address').value,
-        guardianName: document.getElementById('guardianName').value,
-        guardianPhone: document.getElementById('guardianPhone').value,
-        guardianEmail: document.getElementById('guardianEmail').value,
-        guardianRelationship: document.getElementById('guardianRelationship').value,
-        guardianAddress: document.getElementById('guardianAddress').value,
-        program: document.getElementById('programSelect').value,
-        section: document.getElementById('sectionSelect').value
+        elementarySchool: 'N/A',
+        elementaryYearGraduated: '2020',
+        lrn: '000000000000',
+        level: document.getElementById('programSelect')?.value || 'Junior High School',
+        gradeLevel: '7',
+        strand: '',
+        guardianLastName: guardianLastName,
+        guardianFirstName: guardianFirstName,
+        guardianPhone: document.getElementById('guardianPhone')?.value || document.getElementById('phone').value,
+        guardianOccupation: 'Guardian',
+        guardianAddress: document.getElementById('guardianAddress')?.value || document.getElementById('address').value,
+        dataPrivacyAgreed: 1
     };
 
     try {
@@ -1099,6 +1136,21 @@ function saveData() {
 }
 
 // Toggle Grade/Strand Selection based on Level
+function handlePublicSchoolGraduateToggle(checkbox) {
+    const voucherSelect = document.getElementById('modalVoucherEligibility');
+    if (voucherSelect) {
+        if (checkbox.checked) {
+            voucherSelect.value = 'public-school';
+        } else {
+            if (voucherSelect.value === 'public-school') {
+                voucherSelect.value = '';
+            }
+        }
+        updatePaymentSummary();
+    }
+}
+window.handlePublicSchoolGraduateToggle = handlePublicSchoolGraduateToggle;
+
 function toggleGradeStrandSelection() {
     const levelSelect = document.getElementById('modalLevel');
     const gradeLevelContainer = document.getElementById('gradeLevelContainer');
@@ -1106,6 +1158,36 @@ function toggleGradeStrandSelection() {
     const voucherEligibilityContainer = document.getElementById('voucherEligibilityContainer');
     
     const selectedLevel = levelSelect.value;
+
+    const labelBirthCert = document.getElementById('labelDocBirthCert');
+    const labelReportCard = document.getElementById('labelDocReportCard');
+    const labelGoodMoral = document.getElementById('labelDocGoodMoral');
+
+    if (selectedLevel && selectedLevel.startsWith('grade-')) {
+        // Junior High School
+        if (labelBirthCert) labelBirthCert.textContent = 'PSA Birth Certificate (formerly NSO Birth Certificate) *';
+        if (labelReportCard) {
+            if (selectedLevel === 'grade-7') {
+                labelReportCard.textContent = 'Grade 6 Report Card (SF9, formerly Form 138) *';
+            } else {
+                labelReportCard.textContent = 'Previous Grade Report Card (SF9 / Form 138) *';
+            }
+        }
+        if (labelGoodMoral) labelGoodMoral.textContent = 'Certificate of Good Moral Character *';
+    } else {
+        // Senior High School / General
+        if (labelBirthCert) labelBirthCert.textContent = 'PSA Birth Certificate *';
+        if (labelReportCard) {
+            if (selectedLevel === 'senior-high-11') {
+                labelReportCard.textContent = 'Original Grade 10 Report Card (SF9 / Form 138) *';
+            } else if (selectedLevel === 'senior-high-12') {
+                labelReportCard.textContent = 'Previous Grade Report Card (SF9 / Form 138) *';
+            } else {
+                labelReportCard.textContent = 'Form 138 / Report Card *';
+            }
+        }
+        if (labelGoodMoral) labelGoodMoral.textContent = 'Certificate of Good Moral Character *';
+    }
     
     if (selectedLevel && selectedLevel.startsWith('grade-')) {
         gradeLevelContainer.style.display = 'none';
@@ -1161,83 +1243,105 @@ async function loadStrands() {
 
 
 // Update Payment Summary based on level and voucher eligibility
+// Handle repeater selection changes
+function handleRepeaterChange() {
+    const repeaterSelect = document.getElementById('modalIsRepeater');
+    const voucherSelect = document.getElementById('modalVoucherEligibility');
+    if (!repeaterSelect) return;
+    const isRepeater = repeaterSelect.value;
+    // If repeater, disable voucher options and clear selection
+    if (isRepeater === 'Yes') {
+        if (voucherSelect) {
+            voucherSelect.value = '';
+            voucherSelect.disabled = true;
+        }
+        // Hide voucher related UI rows
+        const voucherRow = document.getElementById('voucherRow');
+        const voucherNote = document.getElementById('voucherNote');
+        if (voucherRow) voucherRow.style.display = 'none';
+        if (voucherNote) voucherNote.style.display = 'none';
+    } else {
+        if (voucherSelect) voucherSelect.disabled = false;
+    }
+    updatePaymentSummary();
+}
+
+// Extend updatePaymentSummary to respect repeater status
 function updatePaymentSummary() {
     const levelSelect = document.getElementById('modalLevel');
     if (!levelSelect) return;
     const voucherEligibility = document.getElementById('modalVoucherEligibility');
+    const repeaterSelect = document.getElementById('modalIsRepeater');
     const uniformFeeRow = document.getElementById('uniformFeeRow');
     const voucherRow = document.getElementById('voucherRow');
     const voucherNote = document.getElementById('voucherNote');
     const selectLevelNote = document.getElementById('selectLevelNote');
     const modalTuitionFee = document.getElementById('modalTuitionFee');
     const modalTotalPayment = document.getElementById('modalTotalPayment');
-    
-    // Guard: if payment summary elements are removed from DOM, skip
-    if (!modalTuitionFee || !modalTotalPayment) return;
-    
+    const gwaContainer = document.getElementById('gwaContainer');
+    const gwaInput = document.getElementById('modalGwa');
     const selectedLevel = levelSelect.value;
     const selectedVoucher = voucherEligibility ? voucherEligibility.value : '';
-    
-    // Base fees
+    const isRepeater = repeaterSelect ? repeaterSelect.value : 'No';
     const tuitionFee = 25000;
     const registrationFee = 500;
     const labFee = 1000;
     const libraryFee = 500;
     const idFee = 200;
     const uniformFee = 3000;
-    const voucherAmount = 27000; // Covers tuition + registration + lab + library + ID
-    
+    const voucherAmount = 27000;
     let total = 0;
-    
     if (selectedLevel && selectedLevel.startsWith('grade-')) {
-        // Junior High pays full fees
+        // Junior High pays full fees, repeater status does not affect JHS
         total = tuitionFee + registrationFee + labFee + libraryFee + idFee;
-        modalTuitionFee.textContent = '₱' + tuitionFee.toLocaleString();
-        uniformFeeRow.style.display = 'none';
-        voucherRow.style.display = 'none';
-        voucherNote.style.display = 'none';
-        selectLevelNote.style.display = 'none';
+        if (modalTuitionFee) modalTuitionFee.textContent = '₱' + tuitionFee.toLocaleString();
+        if (uniformFeeRow) uniformFeeRow.style.display = 'none';
+        if (voucherRow) voucherRow.style.display = 'none';
+        if (voucherNote) voucherNote.style.display = 'none';
+        if (selectLevelNote) selectLevelNote.style.display = 'none';
+        if (gwaContainer) gwaContainer.style.display = 'none';
+        if (gwaInput) gwaInput.required = false;
     } else if (selectedLevel === 'senior-high-11' || selectedLevel === 'senior-high-12') {
-        if (selectedVoucher === 'public-school' || selectedVoucher === 'same-school') {
-            // Voucher eligible - pay only uniform fee
-            total = uniformFee;
-            modalTuitionFee.textContent = '₱' + tuitionFee.toLocaleString();
-            uniformFeeRow.style.display = 'flex';
-            voucherRow.style.display = 'flex';
-            voucherNote.style.display = 'block';
-            selectLevelNote.style.display = 'none';
-        } else if (selectedVoucher === 'private-school') {
-            // No voucher - pay full fees
+        if (isRepeater === 'Yes') {
+            // Repeater: no voucher, pay full fees
             total = tuitionFee + registrationFee + labFee + libraryFee + idFee;
-            modalTuitionFee.textContent = '₱' + tuitionFee.toLocaleString();
-            uniformFeeRow.style.display = 'none';
-            voucherRow.style.display = 'none';
-            voucherNote.style.display = 'none';
-            selectLevelNote.style.display = 'none';
         } else {
-            // Not selected yet - show full fees
-            total = tuitionFee + registrationFee + labFee + libraryFee + idFee;
-            modalTuitionFee.textContent = '₱' + tuitionFee.toLocaleString();
-            uniformFeeRow.style.display = 'none';
-            voucherRow.style.display = 'none';
-            voucherNote.style.display = 'none';
-            selectLevelNote.style.display = 'none';
+            if (selectedVoucher === 'public-school') {
+                total = uniformFee;
+            } else if (selectedVoucher === 'same-school-voucher') {
+                total = uniformFee;
+            } else if (selectedVoucher === 'private-school-voucher') {
+                total = (tuitionFee + registrationFee + labFee + libraryFee + idFee) - 17500;
+            } else if (selectedVoucher === 'same-school-no-voucher' || selectedVoucher === 'private-school-no-voucher') {
+                total = tuitionFee + registrationFee + labFee + libraryFee + idFee;
+            } else {
+                total = tuitionFee + registrationFee + labFee + libraryFee + idFee;
+            }
         }
+        if (modalTuitionFee) modalTuitionFee.textContent = '₱' + tuitionFee.toLocaleString();
+        // Show/hide UI rows based on repeater & voucher logic
+        if (uniformFeeRow) uniformFeeRow.style.display = (isRepeater === 'Yes' || selectedVoucher !== 'public-school' && selectedVoucher !== 'same-school-voucher') ? 'none' : 'flex';
+        if (voucherRow) voucherRow.style.display = (isRepeater === 'Yes') ? 'none' : 'flex';
+        if (voucherNote) voucherNote.style.display = (isRepeater === 'Yes') ? 'none' : 'block';
+        if (selectLevelNote) selectLevelNote.style.display = 'none';
+        if (gwaContainer) gwaContainer.style.display = (isRepeater === 'Yes') ? 'none' : 'block';
+        if (gwaInput) gwaInput.required = (isRepeater === 'Yes') ? false : true;
     } else {
-        // Not selected - show default
         total = 0;
-        modalTuitionFee.textContent = '₱0';
-        uniformFeeRow.style.display = 'none';
-        voucherRow.style.display = 'none';
-        voucherNote.style.display = 'none';
-        selectLevelNote.style.display = 'block';
+        if (modalTuitionFee) modalTuitionFee.textContent = '₱0';
+        if (uniformFeeRow) uniformFeeRow.style.display = 'none';
+        if (voucherRow) voucherRow.style.display = 'none';
+        if (voucherNote) voucherNote.style.display = 'none';
+        if (selectLevelNote) selectLevelNote.style.display = 'block';
+        if (gwaContainer) gwaContainer.style.display = 'none';
+        if (gwaInput) gwaInput.required = false;
     }
-    
-    modalTotalPayment.textContent = '₱' + total.toLocaleString();
-    if (typeof updateEnrollmentSummary === 'function') {
-        updateEnrollmentSummary();
-    }
+    if (modalTotalPayment) modalTotalPayment.textContent = '₱' + total.toLocaleString();
+    // Update hidden total field for form submission if needed
+    const totalInput = document.getElementById('modalTotalAmount');
+    if (totalInput) totalInput.value = total;
 }
+
 
 // Register Modal Functions
 function showRegisterModal() {
@@ -1351,6 +1455,24 @@ async function handleModalRegistration(e) {
                 console.log('Form is valid, submitting directly to API');
                 saveFormData();
                 
+                // Read files as base64
+                const birthCertFile = document.getElementById('modalDocBirthCert')?.files[0];
+                const reportCardFile = document.getElementById('modalDocReportCard')?.files[0];
+                const goodMoralFile = document.getElementById('modalDocGoodMoral')?.files[0];
+                const voucherFile = document.getElementById('modalDocVoucher')?.files[0];
+
+                const fileToBase64 = (file) => new Promise((resolve) => {
+                    if (!file) return resolve('');
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+
+                const birthCertBase64 = await fileToBase64(birthCertFile);
+                const reportCardBase64 = await fileToBase64(reportCardFile);
+                const goodMoralBase64 = await fileToBase64(goodMoralFile);
+                const voucherBase64 = await fileToBase64(voucherFile);
+                
                 // Collect form data
                 const selectedLevel = document.getElementById('modalLevel').value;
                 let calculatedGradeLevel = '';
@@ -1390,11 +1512,12 @@ async function handleModalRegistration(e) {
                     highSchoolYearGraduated: document.getElementById('modalHighSchoolYearGraduated').value,
                     grade10Section: '',
                     seniorHighSchool: '',
-                    publicSchoolGraduate: document.getElementById('modalPublicSchoolGraduate').value,
+                    publicSchoolGraduate: document.getElementById('modalPublicSchoolGraduate').checked ? 'Yes' : 'No',
                     level: selectedLevel,
                     gradeLevel: calculatedGradeLevel,
                     strand: document.getElementById('modalStrand').value || '',
                     voucherEligibility: document.getElementById('modalVoucherEligibility').value || '',
+                    gwa: document.getElementById('modalGwa')?.value || '',
                     fatherLastName: document.getElementById('modalFatherLastName').value,
                     fatherFirstName: document.getElementById('modalFatherFirstName').value,
                     fatherMiddleName: document.getElementById('modalFatherMiddleName').value,
@@ -1418,7 +1541,15 @@ async function handleModalRegistration(e) {
                     guardianLandline: '',
                     guardianOccupation: document.getElementById('modalGuardianOccupation').value,
                     guardianAddress: document.getElementById('modalGuardianAddress').value,
-                    dataPrivacyAgreed: document.getElementById('modalDataPrivacy').checked ? 1 : 0
+                    dataPrivacyAgreed: document.getElementById('modalDataPrivacy').checked ? 1 : 0,
+                    birthCertBase64: birthCertBase64,
+                    birthCertName: birthCertFile ? birthCertFile.name : '',
+                    reportCardBase64: reportCardBase64,
+                    reportCardName: reportCardFile ? reportCardFile.name : '',
+                    goodMoralBase64: goodMoralBase64,
+                    goodMoralName: goodMoralFile ? goodMoralFile.name : '',
+                    voucherBase64: voucherBase64,
+                    voucherName: voucherFile ? voucherFile.name : ''
                 };
 
                 console.log('Form data collected:', data);
@@ -1488,9 +1619,9 @@ function assembleEmail() {
 }
 window.assembleEmail = assembleEmail;
 
-// Real-time Gmail format validator
+// Real-time Email format validator
 function validateGmailField(input) {
-    const gmailRegex = /^[a-zA-Z0-9._%+\-]+@gmail\.com$/;
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
     const msg = document.getElementById('emailValidationMsg');
     const val = input.value.trim();
 
@@ -1500,13 +1631,13 @@ function validateGmailField(input) {
         return;
     }
 
-    if (gmailRegex.test(val)) {
+    if (emailRegex.test(val)) {
         input.classList.remove('border-red-500');
         input.classList.add('border-green-500', 'focus:ring-green-500');
         if (msg) {
             msg.classList.remove('hidden', 'text-red-500');
             msg.classList.add('text-green-600');
-            msg.textContent = '✓ Valid Gmail address';
+            msg.textContent = '✓ Valid email address';
         }
     } else {
         input.classList.remove('border-green-500');
@@ -1514,9 +1645,7 @@ function validateGmailField(input) {
         if (msg) {
             msg.classList.remove('hidden', 'text-green-600');
             msg.classList.add('text-red-500');
-            msg.textContent = val.includes('@') && !val.endsWith('@gmail.com')
-                ? '✗ Only @gmail.com addresses are accepted'
-                : '✗ Enter a valid Gmail address (e.g. example@gmail.com)';
+            msg.textContent = '✗ Enter a valid email address (e.g. example@email.com)';
         }
     }
 }
@@ -1552,24 +1681,62 @@ function validateAndConfirmStep(stepNum) {
         }
     });
 
-    // Special handling for email: must be a valid @gmail.com address
+    // Special handling for Step 3: GWA check for voucher eligibility
+    if (stepNum === 3) {
+        const levelSelect = document.getElementById('modalLevel');
+        const voucherSelect = document.getElementById('modalVoucherEligibility');
+        const gwaInput = document.getElementById('modalGwa');
+        if (levelSelect && (levelSelect.value === 'senior-high-11' || levelSelect.value === 'senior-high-12')) {
+            if (voucherSelect && (voucherSelect.value === 'same-school-voucher' || voucherSelect.value === 'private-school-voucher')) {
+                if (!gwaInput || !gwaInput.value.trim()) {
+                    isValid = false;
+                    gwaInput.classList.add('border-red-500');
+                    missingFields.push('Previous Grade / GWA');
+                } else {
+                    const gwa = parseFloat(gwaInput.value.trim());
+                    if (isNaN(gwa) || gwa < 90) {
+                        isValid = false;
+                        gwaInput.classList.add('border-red-500');
+                        showToast('To qualify for a tuition voucher, your GWA must be 90 or above.', 'error');
+                        return;
+                    } else {
+                        gwaInput.classList.remove('border-red-500');
+                    }
+                }
+            }
+        }
+        
+        // LRN length validation (must be exactly 12 digits)
+        const lrnInput = document.getElementById('modalLRN');
+        if (lrnInput && lrnInput.value.trim()) {
+            const lrn = lrnInput.value.trim();
+            if (lrn.length !== 12) {
+                isValid = false;
+                lrnInput.classList.add('border-red-500');
+                showToast('LRN must be exactly 12 digits.', 'error');
+                return;
+            }
+        }
+    }
+
+    // Special handling for email format validation
     if (stepNum === 2) {
         const emailEl = document.getElementById('modalEmail');
-        const gmailRegex = /^[a-zA-Z0-9._%+\-]+@gmail\.com$/;
+        const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
         if (emailEl) {
             if (!emailEl.value.trim()) {
                 isValid = false;
                 emailEl.classList.add('border-red-500');
                 missingFields.push('Email Address');
-            } else if (!gmailRegex.test(emailEl.value.trim())) {
+            } else if (!emailRegex.test(emailEl.value.trim())) {
                 isValid = false;
                 emailEl.classList.add('border-red-500');
-                showToast('Email must be a valid @gmail.com address', 'error');
+                showToast('Please enter a valid email address', 'error');
                 const msg = document.getElementById('emailValidationMsg');
                 if (msg) {
                     msg.classList.remove('hidden', 'text-green-600');
                     msg.classList.add('text-red-500');
-                    msg.textContent = '✗ Only @gmail.com addresses are accepted';
+                    msg.textContent = '✗ Enter a valid email address (e.g. example@email.com)';
                 }
                 return;
             }
@@ -1651,7 +1818,8 @@ function populateStepSummary(stepNum) {
             { label: 'Public Graduate?', val: document.getElementById('modalPublicSchoolGraduate').checked ? 'Yes' : 'No' },
             { label: 'Academic Level', val: levelSelect.options[levelSelect.selectedIndex]?.text || '—' },
             { label: 'Strand', val: strandSelect.options[strandSelect.selectedIndex]?.text || '—' },
-            { label: 'Voucher Eligibility', val: voucherSelect.options[voucherSelect.selectedIndex]?.text || '—' }
+            { label: 'Voucher Eligibility', val: voucherSelect.options[voucherSelect.selectedIndex]?.text || '—' },
+            { label: 'GWA / Grade', val: (document.getElementById('gwaContainer').style.display !== 'none') ? document.getElementById('modalGwa').value : 'N/A' }
         ];
         
         summaryHTML = fields.map(f => `
@@ -1663,14 +1831,57 @@ function populateStepSummary(stepNum) {
     } else if (stepNum === 4) {
         stepTitle = 'Parents Info Summary';
         
-        const fields = [
-            { label: 'Father\'s Name', val: document.getElementById('modalFatherFirstName').value + ' ' + document.getElementById('modalFatherLastName').value },
-            { label: 'Mother\'s Name', val: document.getElementById('modalMotherFirstName').value + ' ' + document.getElementById('modalMotherLastName').value },
-            { label: 'Guardian\'s Name', val: document.getElementById('modalGuardianFirstName').value + ' ' + document.getElementById('modalGuardianLastName').value }
-        ];
+        const fatherDeceased = document.getElementById('modalFatherDeceased')?.checked;
+        const motherDeceased = document.getElementById('modalMotherDeceased')?.checked;
+
+        const fatherName = [
+            document.getElementById('modalFatherFirstName')?.value,
+            document.getElementById('modalFatherMiddleName')?.value,
+            document.getElementById('modalFatherLastName')?.value
+        ].filter(Boolean).join(' ') || '—';
+
+        const motherName = [
+            document.getElementById('modalMotherFirstName')?.value,
+            document.getElementById('modalMotherMiddleName')?.value,
+            document.getElementById('modalMotherLastName')?.value
+        ].filter(Boolean).join(' ') || '—';
+
+        const guardianName = [
+            document.getElementById('modalGuardianFirstName')?.value,
+            document.getElementById('modalGuardianMiddleName')?.value,
+            document.getElementById('modalGuardianLastName')?.value
+        ].filter(Boolean).join(' ') || '—';
+
+        const fields = [];
+        
+        // Father
+        if (fatherDeceased) {
+            fields.push({ label: 'Father\'s Name', val: 'Deceased', fullWidth: true });
+        } else {
+            fields.push({ label: 'Father\'s Name', val: fatherName, fullWidth: true });
+            fields.push({ label: 'Father\'s Phone', val: document.getElementById('modalFatherPhone')?.value || '—' });
+            fields.push({ label: 'Father\'s Occupation', val: document.getElementById('modalFatherOccupation')?.value || '—' });
+            fields.push({ label: 'Father\'s Address', val: document.getElementById('modalFatherAddress')?.value || '—', fullWidth: true });
+        }
+
+        // Mother
+        if (motherDeceased) {
+            fields.push({ label: 'Mother\'s Name', val: 'Deceased', fullWidth: true });
+        } else {
+            fields.push({ label: 'Mother\'s Name', val: motherName, fullWidth: true });
+            fields.push({ label: 'Mother\'s Phone', val: document.getElementById('modalMotherPhone')?.value || '—' });
+            fields.push({ label: 'Mother\'s Occupation', val: document.getElementById('modalMotherOccupation')?.value || '—' });
+            fields.push({ label: 'Mother\'s Address', val: document.getElementById('modalMotherAddress')?.value || '—', fullWidth: true });
+        }
+
+        // Guardian
+        fields.push({ label: 'Guardian\'s Name', val: guardianName, fullWidth: true });
+        fields.push({ label: 'Guardian\'s Phone', val: document.getElementById('modalGuardianPhone')?.value || '—' });
+        fields.push({ label: 'Guardian\'s Occupation', val: document.getElementById('modalGuardianOccupation')?.value || '—' });
+        fields.push({ label: 'Guardian\'s Address', val: document.getElementById('modalGuardianAddress')?.value || '—', fullWidth: true });
         
         summaryHTML = fields.map(f => `
-            <div class="bg-white rounded-lg px-4 py-3 border border-indigo-100 border-l-4 border-l-indigo-500 shadow-sm">
+            <div class="${f.fullWidth ? 'col-span-2' : ''} bg-white rounded-lg px-4 py-3 border border-indigo-100 border-l-4 border-l-indigo-500 shadow-sm">
                 <span class="block text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1">${f.label}</span>
                 <span class="block text-gray-900 font-semibold text-sm break-words">${f.val || '—'}</span>
             </div>
@@ -1687,6 +1898,12 @@ function populateStepSummary(stepNum) {
             { label: 'Report Card', val: reportCard ? reportCard.name : 'Missing' },
             { label: 'Good Moral Cert', val: goodMoral ? goodMoral.name : 'Missing' }
         ];
+
+        const docVoucherContainer = document.getElementById('docVoucherContainer');
+        const docVoucher = document.getElementById('modalDocVoucher')?.files[0];
+        if (docVoucherContainer && docVoucherContainer.style.display !== 'none') {
+            fields.push({ label: 'Voucher Certificate', val: docVoucher ? docVoucher.name : 'Missing' });
+        }
         
         summaryHTML = fields.map(f => `
             <div class="bg-white rounded-lg px-4 py-3 border border-indigo-100 border-l-4 border-l-indigo-500 shadow-sm">
@@ -1797,6 +2014,17 @@ function updateEnrollmentSummary() {
     setEl('summaryLrn', val('modalLRN') || '—');
     setEl('summaryVoucherStatus', selText('modalVoucherEligibility'));
 
+    const gwaContainer = document.getElementById('gwaContainer');
+    const summaryGwaContainer = document.getElementById('summaryGwaContainer');
+    if (gwaContainer && summaryGwaContainer) {
+        if (gwaContainer.style.display !== 'none') {
+            summaryGwaContainer.style.display = 'block';
+            setEl('summaryGwa', val('modalGwa') || '—');
+        } else {
+            summaryGwaContainer.style.display = 'none';
+        }
+    }
+
     const elemSchool = val('modalElementarySchool') || '—';
     const elemYear = val('modalElementaryYearGraduated') || '';
     const hsSchool = val('modalHighSchool') || '—';
@@ -1839,31 +2067,213 @@ function updateEnrollmentSummary() {
 
     // --- Documents ---
     const docFields = [
-        { inputId: 'modalDocBirthCert', summaryId: 'summaryDocBirthCert' },
-        { inputId: 'modalDocReportCard', summaryId: 'summaryDocReportCard' },
-        { inputId: 'modalDocGoodMoral', summaryId: 'summaryDocGoodMoral' }
+        { inputId: 'modalDocBirthCert', summaryId: 'summaryDocBirthCert', title: 'PSA Birth Certificate', containerId: 'docBoxBirthCert' },
+        { inputId: 'modalDocReportCard', summaryId: 'summaryDocReportCard', title: 'Form 138 / Report Card', containerId: 'docBoxReportCard' },
+        { inputId: 'modalDocGoodMoral', summaryId: 'summaryDocGoodMoral', title: 'Certificate of Good Moral', containerId: 'docBoxGoodMoral' },
+        { inputId: 'modalDocVoucher', summaryId: 'summaryDocVoucher', title: 'Voucher Certificate', containerId: 'summaryDocVoucherContainer' }
     ];
+
     docFields.forEach(doc => {
         const fileInput = document.getElementById(doc.inputId);
         const summaryEl = document.getElementById(doc.summaryId);
-        const iconContainer = summaryEl?.closest('.flex')?.querySelector('.w-8');
-        
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-            if (summaryEl) summaryEl.textContent = fileInput.files[0].name;
+        const boxEl = document.getElementById(doc.containerId) || summaryEl?.closest('.flex');
+        const iconContainer = boxEl?.querySelector('.icon-box') || summaryEl?.closest('.flex')?.querySelector('.w-8');
+        const viewBtn = boxEl?.querySelector('.view-btn');
+
+        let fileName = '';
+        let fileObj = fileInput && fileInput.files && fileInput.files[0];
+
+        if (fileObj) {
+            fileName = fileObj.name;
+        } else if (summaryEl && summaryEl.textContent && summaryEl.textContent.trim() !== '—' && summaryEl.textContent.trim() !== 'Not uploaded') {
+            fileName = summaryEl.textContent.trim();
+        }
+
+        if (fileName && fileName !== 'Not uploaded' && fileName !== '—') {
+            if (summaryEl) summaryEl.textContent = fileName;
             if (iconContainer) {
-                iconContainer.className = 'w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold';
+                iconContainer.className = 'w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold shrink-0 icon-box';
                 iconContainer.innerHTML = '<i class="fas fa-check"></i>';
+            }
+            if (viewBtn) {
+                viewBtn.style.display = 'inline-flex';
+            }
+            if (boxEl) {
+                boxEl.style.cursor = 'pointer';
+                boxEl.onclick = () => viewDocumentPreview(doc.inputId, doc.title, fileName);
             }
         } else {
             if (summaryEl) summaryEl.textContent = 'Not uploaded';
             if (iconContainer) {
-                iconContainer.className = 'w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold';
+                iconContainer.className = 'w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold shrink-0 icon-box';
                 iconContainer.innerHTML = '<i class="fas fa-exclamation"></i>';
+            }
+            if (viewBtn) {
+                viewBtn.style.display = 'none';
+            }
+            if (boxEl) {
+                boxEl.style.cursor = 'default';
+                boxEl.onclick = () => {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Document Attached',
+                            text: `No file has been uploaded for ${doc.title} yet. Please go back to Step 5 to upload a document.`,
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    }
+                };
             }
         }
     });
 }
 window.updateEnrollmentSummary = updateEnrollmentSummary;
+
+// --- Document Preview Viewer Functions ---
+function viewDocumentPreview(inputId, title, fallbackFilename = '') {
+    const fileInput = document.getElementById(inputId);
+    let file = fileInput?.files?.[0];
+    let fileUrl = '';
+    let fileName = '';
+    let fileType = '';
+
+    if (file) {
+        fileUrl = URL.createObjectURL(file);
+        fileName = file.name;
+        fileType = file.type || (fileName.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+    } else if (fallbackFilename && fallbackFilename !== '—' && fallbackFilename !== 'Not uploaded') {
+        fileName = fallbackFilename;
+        fileUrl = fallbackFilename;
+        fileType = fileName.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg';
+    }
+
+    if (!fileUrl) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Document Attached',
+                text: `No file has been uploaded for ${title} yet. Please go back to Step 5 to upload a document.`,
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert(`No document attached for ${title}.`);
+        }
+        return;
+    }
+
+    openDocPreviewModal(title, fileName, fileUrl, fileType);
+}
+window.viewDocumentPreview = viewDocumentPreview;
+
+function openDocPreviewModal(title, fileName, fileUrl, fileType) {
+    const modal = document.getElementById('docPreviewModal');
+    const modalTitle = document.getElementById('docPreviewModalTitle');
+    const modalSubTitle = document.getElementById('docPreviewModalSubTitle');
+    const modalBody = document.getElementById('docPreviewModalBody');
+    const openTabBtn = document.getElementById('docPreviewOpenTabBtn');
+    const downloadBtn = document.getElementById('docPreviewDownloadBtn');
+
+    if (!modal) return;
+
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalSubTitle) modalSubTitle.textContent = fileName;
+    if (openTabBtn) openTabBtn.href = fileUrl;
+    if (downloadBtn) {
+        downloadBtn.href = fileUrl;
+        downloadBtn.download = fileName;
+    }
+
+    const isImage = fileType.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(fileName);
+    const isPdf = fileType === 'application/pdf' || /\.pdf$/i.test(fileName);
+
+    if (isImage) {
+        modalBody.innerHTML = `
+            <div class="flex items-center justify-center p-4 bg-slate-900/90 rounded-2xl min-h-[350px] max-h-[70vh] overflow-auto">
+                <img src="${fileUrl}" alt="${fileName}" class="max-h-[65vh] max-w-full rounded-lg object-contain shadow-xl border border-slate-700" />
+            </div>
+        `;
+    } else if (isPdf) {
+        modalBody.innerHTML = `
+            <div class="w-full h-[70vh] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                <iframe src="${fileUrl}" class="w-full h-full border-0"></iframe>
+            </div>
+        `;
+    } else {
+        modalBody.innerHTML = `
+            <div class="p-10 text-center bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                <div class="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto text-2xl font-bold">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div>
+                    <h4 class="text-base font-bold text-slate-800">${fileName}</h4>
+                    <p class="text-xs text-slate-500 mt-1">Direct inline preview is not supported for this file format.</p>
+                </div>
+                <div class="pt-2">
+                    <a href="${fileUrl}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm">
+                        <i class="fas fa-external-link-alt"></i> Open / Download File
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+window.openDocPreviewModal = openDocPreviewModal;
+
+function closeDocPreviewModal() {
+    const modal = document.getElementById('docPreviewModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+window.closeDocPreviewModal = closeDocPreviewModal;
+
+// Document input change listeners for Step 5 preview feedback
+document.addEventListener('DOMContentLoaded', () => {
+    const docInputs = [
+        { id: 'modalDocBirthCert', title: 'PSA Birth Certificate' },
+        { id: 'modalDocReportCard', title: 'Form 138 / Report Card' },
+        { id: 'modalDocGoodMoral', title: 'Certificate of Good Moral' },
+        { id: 'modalDocVoucher', title: 'Voucher Certificate' }
+    ];
+
+    docInputs.forEach(item => {
+        const inputEl = document.getElementById(item.id);
+        if (!inputEl) return;
+
+        inputEl.addEventListener('change', () => {
+            const parent = inputEl.parentElement;
+            let previewBtn = parent.querySelector('.step5-preview-btn');
+
+            if (inputEl.files && inputEl.files[0]) {
+                const file = inputEl.files[0];
+                const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                
+                if (!previewBtn) {
+                    previewBtn = document.createElement('div');
+                    previewBtn.className = 'step5-preview-btn mt-2 flex items-center justify-between p-2 bg-indigo-50/80 rounded-xl border border-indigo-100 text-xs font-semibold text-indigo-700';
+                    parent.appendChild(previewBtn);
+                }
+                
+                previewBtn.innerHTML = `
+                    <span class="truncate pr-2"><i class="fas fa-paperclip mr-1.5 text-indigo-500"></i>${file.name} (${sizeMb} MB)</span>
+                    <button type="button" onclick="viewDocumentPreview('${item.id}', '${item.title}')" class="px-2.5 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shrink-0 flex items-center gap-1 font-bold text-[11px]">
+                        <i class="fas fa-eye text-[10px]"></i> Preview
+                    </button>
+                `;
+            } else if (previewBtn) {
+                previewBtn.remove();
+            }
+
+            if (typeof updateEnrollmentSummary === 'function') {
+                updateEnrollmentSummary();
+            }
+        });
+    });
+});
 
 function nextStep(stepNum) {
     if (stepNum >= totalSteps) return;
@@ -1944,7 +2354,49 @@ function updateStepperUI() {
     }
 }
 
+// Toggle middle name field when "No middle name" checkbox is checked
+function toggleMiddleName(checkbox, inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (checkbox.checked) {
+        input.value = 'N/A';
+        input.disabled = true;
+        input.removeAttribute('required');
+        input.classList.remove('border-red-500');
+        input.classList.add('bg-slate-100', 'text-slate-400');
+        const errorMsg = input.parentNode.querySelector('.error-message');
+        if (errorMsg) errorMsg.remove();
+    } else {
+        input.value = '';
+        input.disabled = false;
+        input.setAttribute('required', '');
+        input.classList.remove('bg-slate-100', 'text-slate-400');
+        input.focus();
+    }
+}
+
+// Toggle "Other" text input when "Other" is selected in a dropdown
+function toggleOtherInput(selectEl, containerId, inputId) {
+    const container = document.getElementById(containerId);
+    const input = document.getElementById(inputId);
+    if (!container || !input) return;
+    if (selectEl.value === 'other') {
+        container.classList.remove('hidden');
+        input.setAttribute('required', '');
+        input.focus();
+    } else {
+        container.classList.add('hidden');
+        input.removeAttribute('required');
+        input.value = '';
+        input.classList.remove('border-red-500');
+        const errorMsg = input.parentNode.querySelector('.error-message');
+        if (errorMsg) errorMsg.remove();
+    }
+}
+
 // Bind to window object for inline HTML event handlers
+window.toggleOtherInput = toggleOtherInput;
+window.toggleMiddleName = toggleMiddleName;
 window.validateAndConfirmStep = validateAndConfirmStep;
 window.nextStep = nextStep;
 window.prevStep = prevStep;
@@ -1999,11 +2451,15 @@ function loadFormData() {
         const formData = JSON.parse(savedData);
         Object.keys(formData).forEach(fieldId => {
             const field = document.getElementById(fieldId);
-            if (field && formData[fieldId]) {
-                field.value = formData[fieldId];
+            if (field) {
+                if (field.type === 'file') return; // Skip restoring values to file inputs
+                if (formData[fieldId] !== undefined && formData[fieldId] !== '') {
+                    field.value = formData[fieldId];
+                }
             }
         });
         
+        if (typeof toggleGradeStrandSelection === 'function') toggleGradeStrandSelection();
         if (typeof updatePaymentSummary === 'function') updatePaymentSummary();
         if (typeof updateEnrollmentSummary === 'function') updateEnrollmentSummary();
     } catch (e) {
@@ -2019,10 +2475,20 @@ function clearFormData() {
 
 // Restore the saved step after a page refresh
 function restoreStep() {
-    const savedStep = parseInt(localStorage.getItem('enrollmentFormStep'), 10);
+    let savedStep = parseInt(localStorage.getItem('enrollmentFormStep'), 10);
     if (!savedStep || savedStep < 1 || savedStep > totalSteps) return;
 
-    // Hide all steps, show only the saved one
+    // Force return to step 5 (documents upload) if they refreshed on step 6
+    // because browsers automatically clear file input selections on refresh
+    if (savedStep === 6) {
+        savedStep = 5;
+        localStorage.setItem('enrollmentFormStep', 5);
+        setTimeout(() => {
+            showToast('Form refreshed. Please re-upload your required documents.', 'info');
+        }, 500);
+    }
+
+    // Hide all steps, show only the target one
     document.querySelectorAll('.form-step').forEach(el => el.classList.add('hidden'));
     const targetStep = document.querySelector(`.form-step[data-step="${savedStep}"]`);
     if (targetStep) targetStep.classList.remove('hidden');
@@ -2075,8 +2541,8 @@ function goToSlide(index) {
     });
     
     // Update progress bar
-    if (progressBar) {
-        const progress = ((index + 1) / 3) * 100;
+    if (progressBar && slides.length > 0) {
+        const progress = ((index + 1) / slides.length) * 100;
         progressBar.style.width = progress + '%';
     }
     
@@ -2094,33 +2560,29 @@ function prevSlide() {
 }
 
 function startAutoSlider() {
+    if (sliderInterval) clearInterval(sliderInterval); // Clear any existing interval to prevent leaks
     sliderInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
 }
 
 function stopAutoSlider() {
     clearInterval(sliderInterval);
-}
-
-// Pause auto-slider on hover
-const sliderContainer = document.getElementById('slider');
-if (sliderContainer) {
-    sliderContainer.addEventListener('mouseenter', stopAutoSlider);
-    sliderContainer.addEventListener('mouseleave', startAutoSlider);
+    sliderInterval = null;
 }
 
 // Toggle Password Visibility
-function togglePasswordVisibility(inputId, button) {
+function togglePasswordVisibility(inputId, iconId) {
     const input = document.getElementById(inputId);
-    const icon = button.querySelector('i');
-    
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+    const icon = document.getElementById(iconId);
+    if (input && icon) {
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
 }
 
@@ -3741,6 +4203,7 @@ function switchTab(tabName) {
 function applyDarkMode(isDark) {
     if (isDark) {
         document.documentElement.classList.add('dark-mode');
+        document.documentElement.classList.add('dark');
         if (document.body) {
             document.body.style.backgroundColor = '#1a1a2e';
             document.body.style.color = '#ffffff';
@@ -3753,6 +4216,7 @@ function applyDarkMode(isDark) {
         }
     } else {
         document.documentElement.classList.remove('dark-mode');
+        document.documentElement.classList.remove('dark');
         if (document.body) {
             document.body.style.backgroundColor = '#f3f4f6';
             document.body.style.color = '#1f2937';
@@ -4759,7 +5223,7 @@ function renderCalendar() {
     // Render current month's days
     for (let i = 1; i <= lastDay; i++) {
         const dayDiv = document.createElement('div');
-        dayDiv.className = 'py-3 rounded-xl text-center font-medium relative cursor-pointer transition hover:bg-gray-100 dark:hover:bg-gray-800';
+        dayDiv.className = 'py-3 rounded-xl text-center font-bold relative cursor-pointer transition hover:bg-blue-100/60 hover:text-blue-700 text-slate-700';
         dayDiv.textContent = i;
         
         // Format current date as YYYY-MM-DD
@@ -4796,7 +5260,7 @@ function renderCalendar() {
 
     for (let j = 1; j <= (remainingCells > 7 ? remainingCells % 7 : remainingCells); j++) {
         const dayDiv = document.createElement('div');
-        dayDiv.classList.add('py-3', 'text-gray-300', 'select-none', 'text-center');
+        dayDiv.classList.add('py-3', 'text-slate-400', 'select-none', 'text-center');
         dayDiv.textContent = j;
         calendarDaysContainer.appendChild(dayDiv);
     }
@@ -4827,8 +5291,8 @@ function renderMonthEventsList(year, month) {
 
     if (monthEvents.length === 0) {
         eventsListContainer.innerHTML = `
-            <div class="text-center py-8 text-gray-500">
-                <i class="fas fa-calendar-times text-3xl mb-2 text-gray-300"></i>
+            <div class="text-center py-8 text-slate-400">
+                <i class="fas fa-calendar-times text-3xl mb-2 text-slate-300"></i>
                 <p class="text-sm">No scheduled events for this month</p>
             </div>
         `;
@@ -4841,17 +5305,17 @@ function renderMonthEventsList(year, month) {
         const monthShort = eventDate.toLocaleString('default', { month: 'short' });
 
         const eventCard = document.createElement('div');
-        eventCard.className = `bg-white dark:bg-[#232343] rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-800 hover:shadow-md transition cursor-pointer flex items-start space-x-4 ${event.bgClass}`;
+        eventCard.className = `glass-card rounded-xl shadow-sm p-4 border border-slate-200/80 hover:shadow-md transition cursor-pointer flex items-start space-x-4 ${event.bgClass}`;
         eventCard.onclick = () => showCalendarEventDetail(event);
         
         eventCard.innerHTML = `
-            <div class="${event.badgeClass} p-3 rounded-lg text-center min-w-[60px] font-bold">
+            <div class="${event.badgeClass} p-3 rounded-lg text-center min-w-[60px] font-bold shadow-sm shrink-0">
                 <div class="text-xl">${dayNum}</div>
                 <div class="text-xs uppercase">${monthShort}</div>
             </div>
-            <div class="flex-1">
-                <h4 class="font-bold text-gray-800 dark:text-white mb-1">${event.title}</h4>
-                <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">${event.desc}</p>
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-slate-800 text-sm mb-1">${event.title}</h4>
+                <p class="text-slate-600 text-xs line-clamp-2 leading-relaxed">${event.desc}</p>
             </div>
         `;
         eventsListContainer.appendChild(eventCard);
@@ -5115,169 +5579,4 @@ function toggleSidebar() {
 
 window.toggleSidebar = toggleSidebar;
 
-function updateEnrollmentSummary() {
-    const lastName = document.getElementById('modalLastName')?.value || '';
-    const firstName = document.getElementById('modalFirstName')?.value || '';
-    const middleName = document.getElementById('modalMiddleName')?.value || '';
-    const nameText = (lastName || firstName) ? `${lastName}, ${firstName} ${middleName}`.trim() : '—';
-    
-    const summaryEnrolleeName = document.getElementById('summaryEnrolleeName');
-    if (summaryEnrolleeName) summaryEnrolleeName.textContent = nameText;
-    
-    // Gender & DOB
-    const dob = document.getElementById('modalDob')?.value || '';
-    const genderSelect = document.getElementById('modalGender');
-    const gender = genderSelect ? genderSelect.options[genderSelect.selectedIndex]?.text : '';
-    const genderDobText = (gender || dob) ? `${gender || '—'} / ${dob || '—'}` : '—';
-    const summaryGenderDob = document.getElementById('summaryGenderDob');
-    if (summaryGenderDob) summaryGenderDob.textContent = genderDobText;
-    
-    // Email & Mobile
-    const email = document.getElementById('modalEmail')?.value || '';
-    const phone = document.getElementById('modalPhone')?.value || '';
-    const contactText = (email || phone) ? `${email || '—'} / ${phone ? '+63' + phone : '—'}` : '—';
-    const summaryContactInfo = document.getElementById('summaryContactInfo');
-    if (summaryContactInfo) summaryContactInfo.textContent = contactText;
-
-    // Full Address
-    const address = document.getElementById('modalAddress')?.value || '';
-    const regionSelect = document.getElementById('modalRegion');
-    const regionText = regionSelect && regionSelect.selectedIndex > 0 ? regionSelect.options[regionSelect.selectedIndex].text : '';
-    const provinceSelect = document.getElementById('modalProvince');
-    const provinceText = provinceSelect && provinceSelect.selectedIndex > 0 ? provinceSelect.options[provinceSelect.selectedIndex].text : '';
-    const citySelect = document.getElementById('modalCity');
-    const cityText = citySelect && citySelect.selectedIndex > 0 ? citySelect.options[citySelect.selectedIndex].text : '';
-    const barangaySelect = document.getElementById('modalBarangay');
-    const barangayText = barangaySelect && barangaySelect.selectedIndex > 0 ? barangaySelect.options[barangaySelect.selectedIndex].text : '';
-    const zip = document.getElementById('modalZipCode')?.value || '';
-    
-    let fullAddress = address;
-    const addressParts = [barangayText, cityText, provinceText, regionText].filter(p => p && !p.startsWith('--'));
-    if (addressParts.length > 0) {
-        fullAddress += (fullAddress ? ', ' : '') + addressParts.join(', ');
-    }
-    if (zip) {
-        fullAddress += ` (${zip})`;
-    }
-    const summaryFullAddress = document.getElementById('summaryFullAddress');
-    if (summaryFullAddress) summaryFullAddress.textContent = fullAddress || '—';
-    
-    // Level
-    const levelSelect = document.getElementById('modalLevel');
-    const levelVal = levelSelect?.value || '';
-    let levelText = '—';
-    if (levelVal && levelVal.startsWith('grade-')) {
-        const gradeNum = levelVal.replace('grade-', '');
-        levelText = `Junior High School (Grade ${gradeNum})`;
-    } else if (levelVal === 'senior-high-11') {
-        levelText = 'Senior High School (Grade 11)';
-    } else if (levelVal === 'senior-high-12') {
-        levelText = 'Senior High School (Grade 12)';
-    }
-    const summaryAcademicLevel = document.getElementById('summaryAcademicLevel');
-    if (summaryAcademicLevel) summaryAcademicLevel.textContent = levelText;
-    
-    // Strand or Grade level
-    let strandText = '—';
-    if (levelVal && levelVal.startsWith('grade-')) {
-        strandText = 'General Curriculum';
-    } else if (levelVal.startsWith('senior-high')) {
-        const strandSelect = document.getElementById('modalStrand');
-        const strandVal = strandSelect?.value || '';
-        if (strandVal) {
-            const opt = strandSelect.options[strandSelect.selectedIndex];
-            strandText = opt ? opt.textContent : '—';
-        }
-    }
-    const summarySelectedStrand = document.getElementById('summarySelectedStrand');
-    if (summarySelectedStrand) summarySelectedStrand.textContent = strandText;
-
-    // LRN
-    const lrn = document.getElementById('modalLRN')?.value || '—';
-    const summaryLrn = document.getElementById('summaryLrn');
-    if (summaryLrn) summaryLrn.textContent = lrn;
-    
-    // Voucher
-    const voucherSelect = document.getElementById('modalVoucherEligibility');
-    const voucherVal = voucherSelect?.value || '';
-    let voucherText = '—';
-    if (voucherVal) {
-        const opt = voucherSelect.options[voucherSelect.selectedIndex];
-        voucherText = opt ? opt.textContent : '—';
-    }
-    const summaryVoucherStatus = document.getElementById('summaryVoucherStatus');
-    if (summaryVoucherStatus) summaryVoucherStatus.textContent = voucherText;
-    
-    // Previous Schooling
-    const elem = document.getElementById('modalElementarySchool')?.value || '';
-    const elemYear = document.getElementById('modalElementaryYearGraduated')?.value || '';
-    const hs = document.getElementById('modalHighSchool')?.value || '';
-    const hsYear = document.getElementById('modalHighSchoolYearGraduated')?.value || '';
-    
-    let schoolingHTML = '';
-    if (elem) schoolingHTML += `<div><strong>Elementary:</strong> ${elem} (Finished: ${elemYear || '—'})</div>`;
-    if (hs) schoolingHTML += `<div><strong>Previous School:</strong> ${hs} (Finished: ${hsYear || '—'})</div>`;
-    const summaryPrevSchooling = document.getElementById('summaryPrevSchooling');
-    if (summaryPrevSchooling) summaryPrevSchooling.innerHTML = schoolingHTML || '—';
-    
-    // Father / Mother / Guardian Contact
-    const fatherF = document.getElementById('modalFatherFirstName')?.value || '';
-    const fatherL = document.getElementById('modalFatherLastName')?.value || '';
-    const fatherPhone = document.getElementById('modalFatherPhone')?.value || '';
-    const fatherOcc = document.getElementById('modalFatherOccupation')?.value || '';
-    const fatherDeceased = document.getElementById('modalFatherDeceased')?.checked;
-    
-    let fatherText = '—';
-    if (fatherF || fatherL) {
-        if (fatherDeceased) {
-            fatherText = `Name: ${fatherL}, ${fatherF} (Deceased)`;
-        } else {
-            fatherText = `Name: ${fatherL}, ${fatherF}<br>Phone: ${fatherPhone || '—'}<br>Occ: ${fatherOcc || '—'}`;
-        }
-    }
-    const summaryFatherInfo = document.getElementById('summaryFatherInfo');
-    if (summaryFatherInfo) summaryFatherInfo.innerHTML = fatherText;
-    
-    const motherF = document.getElementById('modalMotherFirstName')?.value || '';
-    const motherL = document.getElementById('modalMotherLastName')?.value || '';
-    const motherPhone = document.getElementById('modalMotherPhone')?.value || '';
-    const motherOcc = document.getElementById('modalMotherOccupation')?.value || '';
-    const motherDeceased = document.getElementById('modalMotherDeceased')?.checked;
-    
-    let motherText = '—';
-    if (motherF || motherL) {
-        if (motherDeceased) {
-            motherText = `Name: ${motherL}, ${motherF} (Deceased)`;
-        } else {
-            motherText = `Name: ${motherL}, ${motherF}<br>Phone: ${motherPhone || '—'}<br>Occ: ${motherOcc || '—'}`;
-        }
-    }
-    const summaryMotherInfo = document.getElementById('summaryMotherInfo');
-    if (summaryMotherInfo) summaryMotherInfo.innerHTML = motherText;
-    
-    const guardianF = document.getElementById('modalGuardianFirstName')?.value || '';
-    const guardianL = document.getElementById('modalGuardianLastName')?.value || '';
-    const guardianPhone = document.getElementById('modalGuardianPhone')?.value || '';
-    const guardianOcc = document.getElementById('modalGuardianOccupation')?.value || '';
-    
-    let guardianText = '—';
-    if (guardianF || guardianL) {
-        guardianText = `Name: ${guardianL}, ${guardianF}<br>Phone: ${guardianPhone || '—'}<br>Occ: ${guardianOcc || '—'}`;
-    }
-    const summaryPrimaryContact = document.getElementById('summaryPrimaryContact');
-    if (summaryPrimaryContact) summaryPrimaryContact.innerHTML = guardianText;
-
-    // Document attachments
-    const birthCert = document.getElementById('modalDocBirthCert')?.files[0];
-    const reportCard = document.getElementById('modalDocReportCard')?.files[0];
-    const goodMoral = document.getElementById('modalDocGoodMoral')?.files[0];
-    
-    const docBirth = document.getElementById('summaryDocBirthCert');
-    if (docBirth) docBirth.textContent = birthCert ? birthCert.name : 'Missing';
-    const docReport = document.getElementById('summaryDocReportCard');
-    if (docReport) docReport.textContent = reportCard ? reportCard.name : 'Missing';
-    const docMoral = document.getElementById('summaryDocGoodMoral');
-    if (docMoral) docMoral.textContent = goodMoral ? goodMoral.name : 'Missing';
-}
-
-window.updateEnrollmentSummary = updateEnrollmentSummary;
+// Duplicate updateEnrollmentSummary removed — canonical version is defined at line ~1938

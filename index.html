@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Enrollment System</title>
     <script>
+      tailwind = {
+        darkMode: 'class'
+      };
       (function() {
         const isDark = localStorage.getItem('darkMode') === 'enabled';
         if (isDark) {
           document.documentElement.classList.add('dark-mode');
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark-mode');
+          document.documentElement.classList.remove('dark');
         }
       })();
     </script>
@@ -22,65 +29,80 @@
     <!-- Welcome Page Navigation -->
     <nav
       id="welcomeNav"
-      class="bg-blue-600 shadow-lg fixed top-0 left-0 right-0 z-50"
+      class="glass-nav fixed top-0 left-0 right-0 z-50 transition-all duration-300 shadow-sm"
     >
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-center items-center py-4 space-x-4">
-          <div class="flex items-center space-x-3">
-            <img src="img/new-logo.png" alt="Academy of Biringan Logo" class="h-10 w-auto" />
-            <span class="text-white font-bold text-xl">JJKings Academy of Biringan</span>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16 sm:h-20">
+          <!-- Brand Logo & Title -->
+          <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('home')">
+            <div class="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-200 p-1 flex items-center justify-center ring-2 ring-amber-400/20">
+              <img src="img/new-logo.png" alt="Academy Logo" class="h-8 w-auto object-contain" />
+            </div>
+            <div class="flex flex-col">
+              <span class="font-heading font-extrabold text-slate-900 dark:text-white text-lg tracking-tight">JJKings Academy</span>
+              <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest -mt-1">Enrollment Portal</span>
+            </div>
           </div>
-          <button
-            onclick="showFAQModal()"
-            class="bg-white text-[#007dfe] px-4 py-2 rounded-lg hover:bg-gray-100 transition font-bold"
-          >
-            FAQ
-          </button>
-          <button
-            id="navLoginBtn"
-            onclick="showLoginModal()"
-            class="bg-white text-[#004b87] px-4 py-2 rounded-lg hover:bg-gray-100 transition font-bold"
-          >
-            Login
-          </button>
-          <button
-            id="navLogoutBtn"
-            onclick="showLogoutConfirmation()"
-            class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition font-bold hidden"
-          >
-            Logout
-          </button>
-          <button
-            id="navEnrollBtn"
-            onclick="window.location.href='register.html'"
-            class="bg-[#fbc707] text-[#004b87] px-4 py-2 rounded-lg hover:bg-[#e5b500] transition font-bold"
-          >
-            Enrollment
-          </button>
-          <select
-            id="languageSelect"
-            class="bg-blue-700 text-white px-3 py-2 rounded-lg border-none cursor-pointer"
-            onchange="changeLanguage(this.value)"
-          >
-            <option value="en">English</option>
-            <option value="id">Bahasa Indonesia</option>
-            <option value="zh">中文</option>
-            <option value="ar">العربية</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-            <option value="pt">Português</option>
-            <option value="ru">Русский</option>
-            <option value="hi">हिन्दी</option>
-            <option value="th">ไทย</option>
-            <option value="vi">Tiếng Việt</option>
-            <option value="tl">Filipino</option>
-            <option value="ceb">Cebuano</option>
-            <option value="ilo">Ilocano</option>
-            <option value="hil">Hiligaynon</option>
-          </select>
+
+          <!-- Navigation Actions -->
+          <div class="flex items-center space-x-2 sm:space-x-3">
+            <button
+              onclick="showFAQModal()"
+              class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 transition font-semibold text-sm"
+            >
+              <i class="far fa-circle-question text-blue-600"></i> FAQ
+            </button>
+
+            <button
+              id="navLoginBtn"
+              onclick="showLoginModal()"
+              class="px-4 py-2 rounded-xl text-slate-700 hover:bg-slate-100 transition font-semibold text-sm border border-slate-200"
+            >
+              Login
+            </button>
+
+            <button
+              id="navLogoutBtn"
+              onclick="showLogoutConfirmation()"
+              class="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition font-semibold text-sm hidden shadow-sm"
+            >
+              Logout
+            </button>
+
+            <button
+              id="navEnrollBtn"
+              onclick="window.location.href='register.html'"
+              class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2 rounded-xl transition font-bold text-sm shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] flex items-center gap-1.5"
+            >
+              <span>Enrollment</span>
+              <i class="fas fa-arrow-right text-xs"></i>
+            </button>
+
+            <select
+              id="languageSelect"
+              class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold px-2.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              onchange="changeLanguage(this.value)"
+            >
+              <option value="en">English</option>
+              <option value="id">Bahasa Indonesia</option>
+              <option value="zh">中文</option>
+              <option value="ar">العربية</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+              <option value="hi">हिन्दी</option>
+              <option value="th">ไทย</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="tl">Filipino</option>
+              <option value="ceb">Cebuano</option>
+              <option value="ilo">Ilocano</option>
+              <option value="hil">Hiligaynon</option>
+            </select>
+          </div>
         </div>
       </div>
     </nav>
@@ -238,7 +260,7 @@
                       <img
                         src="img/new-logo.png"
                         alt="Academy Logo"
-                        class="h-36 w-auto mx-auto mb-4 animate-pulse object-contain"
+                        class="h-20 sm:h-28 w-auto mx-auto mb-4 animate-pulse object-contain"
                       />
                     <h1
                       class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight"
@@ -265,53 +287,34 @@
                   class="absolute inset-0 bg-gradient-to-r from-[#004b87]/85 to-[#007dfe]/80 pointer-events-none"
                 ></div>
                 <div
-                  class="absolute inset-0 flex items-center justify-between px-8 md:px-16 z-10 pointer-events-none"
+                  class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
                 >
                   <div
-                    class="text-white max-w-4xl relative z-20 pointer-events-none"
+                    class="text-center text-white px-4 max-w-4xl relative z-20 pointer-events-none"
                   >
-                    <div class="mb-6">
+                    <div class="mb-4">
                       <i
-                        class="fas fa-users text-[#fbc707] text-6xl mb-4 animate-pulse"
+                        class="fas fa-users text-[#fbc707] text-5xl mb-2 animate-pulse"
                       ></i>
                     </div>
                     <h1
-                      class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight"
-                      style="font-family: &quot;Inter&quot;, sans-serif"
+                      class="text-4xl md:text-6xl font-extrabold mb-3 tracking-tight font-heading"
                     >
                       Join Our Community
                     </h1>
-                    <p class="text-xl md:text-3xl font-light mb-6 opacity-90">
-                      Learn, Grow, and Succeed Together
+                    <p class="text-lg md:text-2xl font-light mb-6 opacity-90">
+                      Learn, Grow, and Succeed Together with Mythical-Class Facilities
                     </p>
-                    <div class="my-8 py-4 border-t border-b border-white/30">
-                      <i
-                        class="fas fa-book text-[#fbc707] text-5xl mb-4 animate-pulse"
-                      ></i>
-                      <h2
-                        class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight"
-                        style="font-family: &quot;Inter&quot;, sans-serif"
+                    <div class="pt-2">
+                      <button
+                        id="enrollNowButton"
+                        onclick="window.location.href='register.html'"
+                        class="bg-[#fbc707] text-[#004b87] px-10 py-4 rounded-2xl text-xl font-bold hover:bg-[#e5b500] transition transform hover:scale-105 shadow-2xl cursor-pointer pointer-events-auto inline-flex items-center gap-2"
                       >
-                        Mythical-Class Facilities
-                      </h2>
-                      <p class="text-xl md:text-2xl font-light opacity-90">
-                        Modern Academy with State-of-the-Art Resources
-                      </p>
+                        <i class="fas fa-user-plus"></i>
+                        <span>Enroll Now!</span>
+                      </button>
                     </div>
-                  </div>
-                  <div class="z-30 pointer-events-none flex flex-col gap-4">
-                    <button
-                      id="enrollNowButton"
-                      class="bg-[#fbc707] text-[#004b87] px-10 py-4 rounded-2xl text-xl font-bold hover:bg-[#e5b500] transition transform hover:scale-105 shadow-2xl cursor-pointer pointer-events-auto"
-                    >
-                      <i class="fas fa-user-plus mr-2"></i>Enroll Now!
-                    </button>
-                    <button
-                      onclick="window.location.href='register.html'"
-                      class="bg-white/20 backdrop-blur-sm text-white px-10 py-4 rounded-2xl text-xl font-semibold hover:bg-white/30 transition border-2 border-white/30 cursor-pointer pointer-events-auto"
-                    >
-                      <i class="fas fa-user-plus mr-2"></i>Enroll Now
-                    </button>
                   </div>
                 </div>
               </div>
@@ -396,6 +399,115 @@
               <i class="fas fa-chevron-right text-2xl"></i>
             </button>
           </div>
+        </section>
+
+        <!-- Quick Features & Learning Paths Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
+          
+          <!-- Key Statistics Counter Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="glass-card rounded-2xl p-6 text-center transform hover:-translate-y-1 transition duration-300">
+              <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <h3 class="font-heading text-3xl font-extrabold text-slate-900 dark:text-white">5,000+</h3>
+              <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Active Students</p>
+            </div>
+            
+            <div class="glass-card rounded-2xl p-6 text-center transform hover:-translate-y-1 transition duration-300">
+              <div class="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fas fa-award"></i>
+              </div>
+              <h3 class="font-heading text-3xl font-extrabold text-slate-900 dark:text-white">98%</h3>
+              <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Graduation Rate</p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 text-center transform hover:-translate-y-1 transition duration-300">
+              <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fas fa-ticket"></i>
+              </div>
+              <h3 class="font-heading text-3xl font-extrabold text-slate-900 dark:text-white">100%</h3>
+              <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Voucher Acceptance</p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 text-center transform hover:-translate-y-1 transition duration-300">
+              <div class="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fas fa-chalkboard-teacher"></i>
+              </div>
+              <h3 class="font-heading text-3xl font-extrabold text-slate-900 dark:text-white">120+</h3>
+              <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Faculty & Teachers</p>
+            </div>
+          </div>
+
+          <!-- Academic Level Highlights -->
+          <div class="text-center max-w-3xl mx-auto mb-10">
+            <span class="px-3.5 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 uppercase tracking-wider">Educational Offerings</span>
+            <h2 class="font-heading text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-3">Choose Your Learning Path</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">Comprehensive curriculum designed to empower junior high and senior high students for academic success.</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-8">
+            <!-- Junior High School Card -->
+            <div class="glass-card rounded-3xl p-8 hover:shadow-xl transition-all duration-300 flex flex-col justify-between border border-slate-200/80">
+              <div>
+                <div class="flex justify-between items-start mb-6">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md">
+                    <i class="fas fa-school"></i>
+                  </div>
+                  <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200/80 shadow-sm">Grades 7 - 10</span>
+                </div>
+                <h3 class="font-heading text-2xl font-bold text-slate-900 mb-2">Junior High School</h3>
+                <p class="text-slate-700 text-sm leading-relaxed mb-6 font-medium">
+                  Build strong foundations in core subjects (Science, Mathematics, English, Filipino, Social Studies, and TLE) with modern interactive learning labs.
+                </p>
+              </div>
+              <button onclick="window.location.href='register.html'" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-sm transition flex items-center justify-center gap-2 group shadow-md">
+                <span>Apply for Junior High</span>
+                <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+              </button>
+            </div>
+
+            <!-- Senior High School Card -->
+            <div class="glass-card rounded-3xl p-8 hover:shadow-xl transition-all duration-300 flex flex-col justify-between border border-slate-200/80">
+              <div>
+                <div class="flex justify-between items-start mb-6">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center text-2xl shadow-md">
+                    <i class="fas fa-graduation-cap"></i>
+                  </div>
+                  <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200/80 shadow-sm">Grades 11 - 12</span>
+                </div>
+                <h3 class="font-heading text-2xl font-bold text-slate-900 mb-2">Senior High School</h3>
+                <p class="text-slate-700 text-sm leading-relaxed mb-6 font-medium">
+                  Specialized academic strands (STEM, ABM, HUMSS, TVL-ICT, TVL-HE) preparing students for university entrance exams and career readiness.
+                </p>
+              </div>
+              <button onclick="window.location.href='register.html'" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm transition flex items-center justify-center gap-2 group shadow-md shadow-blue-500/20">
+                <span>Apply for Senior High</span>
+                <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Direct Enrollment Callout Banner -->
+          <div class="relative rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 p-8 sm:p-12 text-white overflow-hidden shadow-xl">
+            <div class="relative z-10 max-w-2xl">
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-white/20 backdrop-blur-sm uppercase tracking-wider mb-4 inline-block">Enrollment Open for SY 2026-2027</span>
+              <h2 class="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">Start Your Application Today</h2>
+              <p class="text-blue-100 text-sm sm:text-base mb-8 leading-relaxed">
+                Take the first step toward a bright future at JJKings Academy. Fast online application, DepEd ESC/QVR voucher support, and automated verification.
+              </p>
+              <div class="flex flex-wrap gap-4">
+                <button onclick="window.location.href='register.html'" class="bg-white text-blue-600 hover:bg-slate-100 font-bold px-6 py-3 rounded-xl text-sm transition shadow-lg flex items-center gap-2">
+                  <span>Start Enrollment Form</span>
+                  <i class="fas fa-arrow-right text-xs"></i>
+                </button>
+                <button onclick="showFAQModal()" class="bg-white/10 hover:bg-white/20 border border-white/30 font-semibold px-6 py-3 rounded-xl text-sm transition">
+                  Frequently Asked Questions
+                </button>
+              </div>
+            </div>
+          </div>
+
         </section>
       </div>
 
@@ -1813,7 +1925,7 @@
 
 
       <!-- Footer -->
-      <footer class="bg-[#004b87] text-white py-12 mt-8">
+      <footer class="bg-slate-900 dark:bg-slate-950 text-white py-16 mt-16 sm:mt-24 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4">
           <div class="grid md:grid-cols-4 gap-8">
             <div>

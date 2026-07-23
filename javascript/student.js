@@ -1,16 +1,36 @@
 // Student Dashboard JavaScript
 
 // Customize SweetAlert2 to match the landing page modal design
-const Swal = window.Swal.mixin({
+const baseSwal = window.Swal.mixin({
     customClass: {
-        popup: 'rounded-xl shadow-2xl p-8 border border-gray-100 max-w-md w-full',
-        title: 'text-2xl font-bold text-gray-800',
-        htmlContainer: 'text-gray-600 text-sm leading-relaxed mt-2',
+        popup: 'rounded-xl shadow-2xl p-8 border border-gray-100 dark:border-slate-800 max-w-md w-full',
+        title: 'text-2xl font-bold text-gray-800 dark:text-white',
+        htmlContainer: 'text-gray-600 dark:text-gray-300 text-sm leading-relaxed mt-2',
         confirmButton: 'bg-[#007dfe] text-white px-6 py-2.5 rounded-lg hover:bg-[#004b87] transition font-medium focus:ring-2 focus:ring-blue-300 border-none outline-none mx-2 cursor-pointer',
         cancelButton: 'bg-gray-500 text-white px-6 py-2.5 rounded-lg hover:bg-gray-600 transition font-medium focus:ring-2 focus:ring-gray-300 border-none outline-none mx-2 cursor-pointer'
     },
     buttonsStyling: false
 });
+
+const Swal = {
+    fire: function(options) {
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        let swalOptions = typeof options === 'string' ? { title: options } : { ...options };
+        
+        if (isDark) {
+            swalOptions.background = '#181832';
+            swalOptions.color = '#ffffff';
+        } else {
+            swalOptions.background = '#ffffff';
+            swalOptions.color = '#1f2937';
+        }
+        
+        return baseSwal.fire(swalOptions);
+    },
+    showLoading: function() {
+        return baseSwal.showLoading();
+    }
+};
 
 // Check active student session on page load
 async function checkStudentSession() {
@@ -208,6 +228,30 @@ function getSubjectColors(subject) {
 }
 
 // Load schedule data from DB API
+// Toggle schedule view (card vs table)
+function toggleScheduleView(viewType) {
+    const cardContainer = document.getElementById('scheduleContainer');
+    const tableContainer = document.getElementById('scheduleTableView');
+    const btnCard = document.getElementById('btnCardView');
+    const btnTable = document.getElementById('btnTableView');
+    if (!cardContainer || !tableContainer || !btnCard || !btnTable) return;
+    
+    if (viewType === 'card') {
+        cardContainer.classList.remove('hidden');
+        tableContainer.classList.add('hidden');
+        
+        btnCard.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm transition";
+        btnTable.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition";
+    } else {
+        cardContainer.classList.add('hidden');
+        tableContainer.classList.remove('hidden');
+        
+        btnTable.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm transition";
+        btnCard.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition";
+    }
+}
+
+// Load schedule data from DB API
 async function loadSchedule() {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     
@@ -236,7 +280,11 @@ async function loadSchedule() {
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <i class="fas fa-door-open text-[9px] text-slate-400"></i>
-                                        <span>Room ${cls.room}</span>
+                                        <span>Room ${cls.room_raw || cls.room.split(' ')[0]}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-user-tie text-[9px] text-slate-400"></i>
+                                        <span>${cls.teacher || 'TBA'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -246,6 +294,33 @@ async function loadSchedule() {
                     daySchedule.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">No classes</p>';
                 }
             });
+            
+            // Populate Table View
+            const tableBody = document.getElementById('scheduleTableBody');
+            if (tableBody) {
+                let tableRows = [];
+                days.forEach(day => {
+                    const classes = result.data[day] || [];
+                    classes.forEach(cls => {
+                        const dayCapitalized = day.charAt(0).toUpperCase() + day.slice(1);
+                        tableRows.push(`
+                            <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                                <td class="px-4 py-3 font-bold text-slate-700 dark:text-slate-300">${dayCapitalized}</td>
+                                <td class="px-4 py-3 text-slate-600 dark:text-slate-400">${cls.time}</td>
+                                <td class="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">${cls.subject}</td>
+                                <td class="px-4 py-3 text-slate-600 dark:text-slate-400">Room ${cls.room_raw || cls.room.split(' ')[0]}</td>
+                                <td class="px-4 py-3 text-slate-600 dark:text-slate-400">${cls.teacher || 'TBA'}</td>
+                            </tr>
+                        `);
+                    });
+                });
+                
+                if (tableRows.length > 0) {
+                    tableBody.innerHTML = tableRows.join('');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500">No classes scheduled.</td></tr>';
+                }
+            }
             
             // Populate upcoming classes list and next class stats card
             populateUpcomingClasses(result.data);
@@ -317,6 +392,10 @@ function populateUpcomingClasses(scheduleData) {
 
 // Update student dashboard layout with profile
 function updateStudentDashboard(data) {
+    studentStatus = data.status;
+    studentSection = data.section || 'N/A';
+    updateEnrollmentProgressTracker(studentStatus, studentSection, currentRemainingBalance);
+
     // Welcoming header with student's actual database name
     const header = document.querySelector('main h2');
     if (header) {
@@ -691,6 +770,7 @@ function applyDarkMode(isDark) {
     const icon = document.getElementById('darkModeIcon');
     if (isDark) {
         document.documentElement.classList.add('dark-mode');
+        document.documentElement.classList.add('dark');
         if (document.body) {
             document.body.style.backgroundColor = '#1a1a2e';
             document.body.style.color = '#ffffff';
@@ -702,6 +782,7 @@ function applyDarkMode(isDark) {
         }
     } else {
         document.documentElement.classList.remove('dark-mode');
+        document.documentElement.classList.remove('dark');
         if (document.body) {
             document.body.style.backgroundColor = '#f5f8fb';
             document.body.style.color = '#2c3e50';
@@ -823,7 +904,7 @@ function renderCalendar() {
     // Render current month's days
     for (let i = 1; i <= lastDay; i++) {
         const dayDiv = document.createElement('div');
-        dayDiv.className = 'py-3 rounded-xl text-center font-bold relative cursor-pointer transition hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200';
+        dayDiv.className = 'py-3 rounded-xl text-center font-bold relative cursor-pointer transition hover:bg-blue-100/60 hover:text-blue-700 text-slate-700';
         dayDiv.textContent = i;
         
         const formattedMonth = String(month + 1).padStart(2, '0');
@@ -900,7 +981,7 @@ function renderMonthEventsList(year, month) {
         const monthShort = eventDate.toLocaleString('default', { month: 'short' });
 
         const eventCard = document.createElement('div');
-        eventCard.className = `rounded-xl p-3.5 border hover:shadow-md transition cursor-pointer flex items-start space-x-3 dark:bg-slate-800/40 dark:border-slate-700/50 ${event.bgClass}`;
+        eventCard.className = `rounded-xl p-3.5 border hover:shadow-md transition cursor-pointer flex items-start space-x-3 ${event.bgClass}`;
         eventCard.onclick = () => showCalendarEventDetail(event);
         
         eventCard.innerHTML = `
@@ -909,8 +990,8 @@ function renderMonthEventsList(year, month) {
                 <div class="text-[9px] uppercase tracking-wider">${monthShort}</div>
             </div>
             <div class="flex-1 min-w-0">
-                <h4 class="font-bold text-slate-700 dark:text-white text-xs truncate mb-0.5">${event.title}</h4>
-                <p class="text-slate-500 dark:text-slate-300 text-[10px] line-clamp-2 leading-relaxed">${event.desc}</p>
+                <h4 class="font-bold text-slate-700 text-xs truncate mb-0.5">${event.title}</h4>
+                <p class="text-slate-500 text-[10px] line-clamp-2 leading-relaxed">${event.desc}</p>
             </div>
         `;
         eventsListContainer.appendChild(eventCard);
@@ -1036,6 +1117,74 @@ async function changeSemester(semester) {
 }
 
 let currentRemainingBalance = 0;
+let studentStatus = 'pending';
+let studentSection = 'N/A';
+
+// Dynamic Enrollment Progress Tracker Updater
+function updateEnrollmentProgressTracker(userStatus, userSection, remainingBalance) {
+    const progressBar = document.getElementById('enrollmentProgressBar');
+    if (!progressBar) return;
+    
+    // Step status variables
+    const step2Completed = userStatus === 'approved';
+    const step3Completed = step2Completed && userSection && userSection !== 'N/A' && userSection !== '';
+    const step4Completed = step3Completed && remainingBalance <= 0;
+    
+    // Calculate progress percentage
+    let percentage = 0;
+    if (step4Completed) percentage = 100;
+    else if (step3Completed) percentage = 66;
+    else if (step2Completed) percentage = 33;
+    
+    progressBar.style.width = percentage + '%';
+    
+    // Update Step 2 (Verification)
+    const circle2 = document.getElementById('epCircle-2');
+    const label2 = document.getElementById('epLabel-2');
+    if (circle2 && label2) {
+        if (step2Completed) {
+            circle2.className = 'w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm border-4 border-green-100 dark:border-green-950 transition-all';
+            circle2.innerHTML = '<i class="fas fa-check"></i>';
+            label2.className = 'text-[10px] font-bold mt-2 text-green-500';
+            label2.textContent = 'Verified';
+        } else {
+            circle2.className = 'w-10 h-10 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-sm border-4 border-white dark:border-slate-800 transition-all';
+            circle2.innerHTML = '2';
+            label2.className = 'text-[10px] font-bold mt-2 text-slate-400';
+            label2.textContent = 'Verified';
+        }
+    }
+    
+    // Update Step 3 (Section Assignment)
+    const circle3 = document.getElementById('epCircle-3');
+    const label3 = document.getElementById('epLabel-3');
+    if (circle3 && label3) {
+        if (step3Completed) {
+            circle3.className = 'w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm border-4 border-green-100 dark:border-green-950 transition-all';
+            circle3.innerHTML = '<i class="fas fa-check"></i>';
+            label3.className = 'text-[10px] font-bold mt-2 text-green-500';
+        } else {
+            circle3.className = 'w-10 h-10 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-sm border-4 border-white dark:border-slate-800 transition-all';
+            circle3.innerHTML = '3';
+            label3.className = 'text-[10px] font-bold mt-2 text-slate-400';
+        }
+    }
+    
+    // Update Step 4 (Fully Paid)
+    const circle4 = document.getElementById('epCircle-4');
+    const label4 = document.getElementById('epLabel-4');
+    if (circle4 && label4) {
+        if (step4Completed) {
+            circle4.className = 'w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm border-4 border-green-100 dark:border-green-950 transition-all';
+            circle4.innerHTML = '<i class="fas fa-check"></i>';
+            label4.className = 'text-[10px] font-bold mt-2 text-green-500';
+        } else {
+            circle4.className = 'w-10 h-10 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-sm border-4 border-white dark:border-slate-800 transition-all';
+            circle4.innerHTML = '4';
+            label4.className = 'text-[10px] font-bold mt-2 text-slate-400';
+        }
+    }
+}
 
 async function loadBillingDetails() {
     try {
@@ -1048,6 +1197,7 @@ async function loadBillingDetails() {
         }
         
         currentRemainingBalance = parseFloat(billing.remaining_balance);
+        updateEnrollmentProgressTracker(studentStatus, studentSection, currentRemainingBalance);
         
         // Update stats cards
         const dashboardPaymentStatus = document.getElementById('dashboardPaymentStatus');
@@ -1176,6 +1326,7 @@ function openPaymentModal() {
     if (payAmountInput) {
         payAmountInput.value = currentRemainingBalance;
         payAmountInput.max = currentRemainingBalance;
+        payAmountInput.min = Math.min(2000, currentRemainingBalance);
     }
     
     if (modal && content) {
@@ -1212,11 +1363,12 @@ async function submitPayment(event) {
     const expiry = document.getElementById('payExpiry').value;
     const cvv = document.getElementById('payCVV').value;
     
-    if (amount <= 0 || amount > currentRemainingBalance) {
+    const minPayment = Math.min(2000, currentRemainingBalance);
+    if (isNaN(amount) || amount < minPayment || amount > currentRemainingBalance) {
         Swal.fire({
             icon: 'error',
-            title: 'Invalid Amount',
-            text: 'Please enter an amount greater than 0 and not exceeding your remaining balance.'
+            title: 'Invalid Payment Amount',
+            text: `The minimum payment amount is ₱${minPayment.toLocaleString()} (and cannot exceed your remaining balance of ₱${currentRemainingBalance.toLocaleString()}).`
         });
         return;
     }

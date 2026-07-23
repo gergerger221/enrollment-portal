@@ -1,5 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --primary: #007dfe;
+    --primary-hover: #0060c7;
+    --primary-gradient: linear-gradient(135deg, #007dfe 0%, #6366f1 100%);
+    --accent-gradient: linear-gradient(135deg, #fbc707 0%, #e5b500 100%);
+}
+
 body {
+    font-family: var(--font-body);
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, .font-heading {
+    font-family: var(--font-heading);
+}
+
+/* Glassmorphism & Visual Utilities */
+.glass-nav {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.dark-mode .glass-nav {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border-bottom-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Explicit Dark Mode Overrides */
+.dark-mode .glass-nav {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border-bottom-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark-mode .glass-card {
+    background: rgba(30, 41, 59, 0.85) !important;
+    border-color: rgba(51, 65, 85, 0.8) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GLOBAL HIGH-CONTRAST LIGHT MODE & MEDIA QUERY OVERRIDES
+   Ensures 100% crisp visibility for all text, headings, cards, and footer in Light Mode
+   ══════════════════════════════════════════════════════════════════════════ */
+
+html:not(.dark-mode) {
+    color-scheme: light !important;
+}
+
+html:not(.dark-mode) body {
+    background-color: #f8fafc !important;
+    color: #1e293b !important;
+}
+
+/* 1. Global Light Mode Text & Heading Contrast Overrides */
+html:not(.dark-mode) .text-slate-900,
+html:not(.dark-mode) .text-slate-800,
+html:not(.dark-mode) .text-gray-900,
+html:not(.dark-mode) .text-gray-800 {
+    color: #0f172a !important;
+}
+
+html:not(.dark-mode) .text-slate-700,
+html:not(.dark-mode) .text-gray-700 {
+    color: #334155 !important;
+}
+
+html:not(.dark-mode) .text-slate-600,
+html:not(.dark-mode) .text-slate-500,
+html:not(.dark-mode) .text-gray-600,
+html:not(.dark-mode) .text-gray-500 {
+    color: #64748b !important;
+}
+
+html:not(.dark-mode) .text-slate-400,
+html:not(.dark-mode) .text-gray-400 {
+    color: #94a3b8 !important;
+}
+
+/* 2. White Cards & Glass Surfaces in Light Mode */
+html:not(.dark-mode) .bg-white,
+html:not(.dark-mode) .glass-card {
+    background-color: #ffffff !important;
+    border-color: rgba(226, 232, 240, 0.8) !important;
+    color: #1e293b !important;
+}
+
+html:not(.dark-mode) .bg-white h1,
+html:not(.dark-mode) .bg-white h2,
+html:not(.dark-mode) .bg-white h3,
+html:not(.dark-mode) .bg-white h4,
+html:not(.dark-mode) .bg-white .font-heading,
+html:not(.dark-mode) .glass-card h1,
+html:not(.dark-mode) .glass-card h2,
+html:not(.dark-mode) .glass-card h3,
+html:not(.dark-mode) .glass-card h4,
+html:not(.dark-mode) .glass-card .font-heading {
+    color: #0f172a !important;
+}
+
+html:not(.dark-mode) .bg-white p,
+html:not(.dark-mode) .glass-card p:not(.text-blue-600):not(.text-emerald-600):not(.text-indigo-600) {
+    color: #64748b !important;
+}
+
+/* 3. Top Header Navigation Contrast */
+html:not(.dark-mode) #welcomeNav {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+html:not(.dark-mode) #welcomeNav span.font-heading {
+    color: #0f172a !important;
+}
+
+html:not(.dark-mode) #welcomeNav button:not(#navEnrollBtn):not(#navLogoutBtn) {
+    color: #334155 !important;
+}
+
+html:not(.dark-mode) #welcomeNav button:not(#navEnrollBtn):not(#navLogoutBtn):hover {
+    background-color: #eff6ff !important;
+    color: #0284c7 !important;
+    border-color: #93c5fd !important;
+}
+
+html:not(.dark-mode) #welcomeNav #languageSelect {
+    background-color: #f1f5f9 !important;
+    color: #334155 !important;
+    border-color: #cbd5e1 !important;
+}
+
+.dark-mode #welcomeNav button:not(#navEnrollBtn):not(#navLogoutBtn) {
+    color: #e2e8f0 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ENROLLMENT FORM & STEPPER DESIGN ENHANCEMENTS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#registerModalForm input[type="text"],
+#registerModalForm input[type="email"],
+#registerModalForm input[type="tel"],
+#registerModalForm input[type="date"],
+#registerModalForm input[type="number"],
+#registerModalForm input[type="file"],
+#registerModalForm textarea,
+#registerModalForm select {
+    border-radius: 0.75rem !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+#registerModalForm input:focus,
+#registerModalForm textarea:focus,
+#registerModalForm select:focus {
+    border-color: #007dfe !important;
+    box-shadow: 0 0 0 4px rgba(0, 125, 254, 0.12) !important;
+    outline: none !important;
+}
+
+#registerModalForm label {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 0.375rem !important;
+}
+
+/* Stepper Active / Complete Indicators */
+.step-circle {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.step-circle.bg-indigo-600,
+.step-circle.bg-blue-600 {
+    background: linear-gradient(135deg, #007dfe 0%, #6366f1 100%) !important;
+    border-color: #e0e7ff !important;
+    box-shadow: 0 4px 15px rgba(0, 125, 254, 0.35) !important;
+}
+
+.step-circle.bg-green-600,
+.step-circle.bg-emerald-600 {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border-color: #d1fae5 !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* 4. Site Footer Contrast (Dark slate background with white text in ALL modes) */
+footer,
+.site-footer,
+footer.bg-slate-900 {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+}
+
+footer h1, footer h2, footer h3, footer h4, footer span, footer a, footer p, footer li, footer div {
+    color: #cbd5e1 !important;
+}
+
+footer h1, footer h2, footer h3, footer h4, footer .font-bold, footer strong, footer span.text-white {
+    color: #ffffff !important;
+}
+
+footer a:hover {
+    color: #38bdf8 !important;
+}
+
+.dark-mode footer,
+.dark-mode .site-footer {
+    background-color: #020617 !important;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #007dfe 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+    animation: floatSlow 4s ease-in-out infinite;
 }
 
 /* Tab Navigation Styles */
@@ -342,11 +587,18 @@ main.sidebar-expanded {
 
 /* Tab Content Spacing Adjustments */
 .tab-content {
-    padding-top: 90px !important;
+    padding-top: 80px !important;
 }
 
 #home-tab {
-    padding-top: 64px !important;
+    padding-top: 80px !important;
+}
+
+@media (max-width: 639px) {
+    .tab-content,
+    #home-tab {
+        padding-top: 64px !important;
+    }
 }
 
 /* Dark Mode Slate Color Overrides for Admin Dashboard */
@@ -519,6 +771,9 @@ main.sidebar-expanded {
 .admin-dark #sectionsTab .bg-blue-50 {
     background-color: rgba(59, 130, 246, 0.1);
 }
+.admin-dark #sectionsTab .bg-gradient-to-r {
+    background: linear-gradient(to right, #0f172a, #1e293b) !important;
+}
 .admin-dark #sectionsTab .text-slate-800,
 .admin-dark #sectionsTab .text-slate-700 {
     color: #f1f5f9;
@@ -549,3 +804,13 @@ main.sidebar-expanded {
     border-color: #334155 !important;
     color: #f1f5f9 !important;
 }
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-active { background-color: #d1fae5; color: #047857; }
+.badge-redeemed { background-color: #fee2e2; color: #b91c1c; }
+.badge-expired { background-color: #f3f4f6; color: #4b5563; }

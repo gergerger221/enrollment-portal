@@ -56,6 +56,12 @@ function ensureAppSchema(PDO $pdo): void
         'status' => "ADD COLUMN `status` ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending'",
         'password_hash' => 'ADD COLUMN `password_hash` VARCHAR(255) DEFAULT NULL',
         'approved_at' => 'ADD COLUMN `approved_at` DATETIME DEFAULT NULL',
+        'birth_cert_path' => 'ADD COLUMN `birth_cert_path` VARCHAR(255) DEFAULT NULL',
+        'report_card_path' => 'ADD COLUMN `report_card_path` VARCHAR(255) DEFAULT NULL',
+        'good_moral_path' => 'ADD COLUMN `good_moral_path` VARCHAR(255) DEFAULT NULL',
+        'voucher_path' => 'ADD COLUMN `voucher_path` VARCHAR(255) DEFAULT NULL',
+        'gwa' => 'ADD COLUMN `gwa` DECIMAL(5,2) DEFAULT NULL',
+        'is_repeater' => "ADD COLUMN `is_repeater` VARCHAR(10) DEFAULT 'No'"
     ];
     $alter = [];
     foreach ($expectedColumns as $column => $definition) {
@@ -111,7 +117,7 @@ function ensureAppSchema(PDO $pdo): void
         );
     }
 
-    $stmt = $pdo->prepare('SELECT id, status, password_hash FROM students WHERE email = ?');
+    $stmt = $pdo->prepare('SELECT id, status, password_hash, portal_password FROM students WHERE email = ?');
     $stmt->execute(['admin@university.local']);
     $admin = $stmt->fetch();
     $defaultPasswordHash = password_hash('password123', PASSWORD_DEFAULT);
@@ -120,6 +126,10 @@ function ensureAppSchema(PDO $pdo): void
         $params = [];
         if ($admin['password_hash'] === null) {
             $updates[] = '`password_hash` = ?';
+            $params[] = $defaultPasswordHash;
+        }
+        if (empty($admin['portal_password'])) {
+            $updates[] = '`portal_password` = ?';
             $params[] = $defaultPasswordHash;
         }
         if ($admin['status'] !== 'approved') {
@@ -132,7 +142,7 @@ function ensureAppSchema(PDO $pdo): void
         }
     } else {
         $stmt = $pdo->prepare(
-            'INSERT INTO students (last_name, first_name, middle_name, email, phone, dob, address, guardian_name, guardian_phone, guardian_email, guardian_relationship, guardian_address, program, section, status, password_hash, approved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())'
+            'INSERT INTO students (last_name, first_name, middle_name, email, phone, dob, address, guardian_name, guardian_phone, guardian_email, guardian_relationship, guardian_address, program, section, status, password_hash, portal_password, portal_access, approved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, NOW())'
         );
         $stmt->execute([
             'Admin',
@@ -150,6 +160,7 @@ function ensureAppSchema(PDO $pdo): void
             'Administration',
             'N/A',
             'approved',
+            $defaultPasswordHash,
             $defaultPasswordHash,
             '2024-01-01 00:00:00'
         ]);
